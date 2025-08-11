@@ -8,7 +8,6 @@ from Audify.utils.decorators.language import LanguageStart, languageCB
 from Audify.utils.inline.help import help_back_markup, private_help_panel
 from config import BANNED_USERS, SUPPORT_CHAT
 from strings import get_string, helpers
-from Audify.help.buttons import BUTTONS
 from Audify.help.helper import Helper
 
 #------------------------------------------------------------------------------------------------------------------------
