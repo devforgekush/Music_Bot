@@ -16,14 +16,13 @@ from typing import Optional, Union
 
 import aiohttp
 from pyrogram import Client, filters, enums
-from pyrogram.errors import RPCError
+from pyrogram.errors import RPCError, FloodWait
 from pyrogram.enums import ParseMode
 from pyrogram.types import ChatMemberUpdated, Message, Chat, User
 
 from Audify import app
 from Audify.utils.Audify_BAN import admin_filter
 
-# Logger
 LOGGER = getLogger(__name__)
 
 # Welcome database mock
@@ -52,6 +51,29 @@ class temp:
     MELCOW = {}
     U_NAME = None
     B_NAME = None
+
+# Cache for chat member counts
+_chat_count_cache = {}  # {chat_id: (count, last_update)}
+
+async def get_cached_member_count(chat_id: int) -> Union[int, str]:
+    """Get member count with caching and floodwait handling."""
+    now = time.time()
+    if chat_id in _chat_count_cache:
+        count, last_update = _chat_count_cache[chat_id]
+        if now - last_update < 600:  # 10 min cache
+            return count
+
+    try:
+        count = await app.get_chat_members_count(chat_id)
+        _chat_count_cache[chat_id] = (count, now)
+        return count
+    except FloodWait as e:
+        LOGGER.warning(f"[WELCOME] FloodWait {e.value}s while fetching member count for {chat_id}")
+        await asyncio.sleep(e.value)
+        return await get_cached_member_count(chat_id)
+    except RPCError as e:
+        LOGGER.warning(f"[WELCOME] Could not fetch member count for {chat_id}: {e}")
+        return "N/A"
 
 # Command to toggle welcome messages
 @app.on_message(filters.command("welcome") & ~filters.private)
@@ -83,17 +105,12 @@ async def auto_state(_, message: Message):
     else:
         await message.reply("**Only group admins can change welcome settings.**")
 
-# Greet new members with random messages
+# Greet new members
 @app.on_chat_member_updated(filters.group, group=-3)
 async def greet_new_member(_, member: ChatMemberUpdated):
     chat_id = member.chat.id
 
-    # Fix: avoid crash if bot can't access member count
-    try:
-        count = await app.get_chat_members_count(chat_id)
-    except RPCError as e:
-        LOGGER.warning(f"[WELCOME] Could not fetch member count for {chat_id}: {e}")
-        count = "N/A"
+    count = await get_cached_member_count(chat_id)
 
     A = await wlcm.find_one(chat_id)
     if A:
@@ -103,13 +120,12 @@ async def greet_new_member(_, member: ChatMemberUpdated):
 
     if member.new_chat_member and not member.old_chat_member and member.new_chat_member.status != "kicked":
         try:
-            if (temp.MELCOW).get(f"welcome-{chat_id}") is not None:
+            if temp.MELCOW.get(f"welcome-{chat_id}") is not None:
                 try:
                     await temp.MELCOW[f"welcome-{chat_id}"].delete()
                 except Exception as e:
                     LOGGER.error(e)
 
-            # Welcome messages
             welcome_messages = [
                 f"👋 Welcome {user.mention} to {member.chat.title}!",
                 f"🎉 Glad to have you here, {user.mention}!",
