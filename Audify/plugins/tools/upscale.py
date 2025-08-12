@@ -8,7 +8,6 @@
 
 import os
 import aiohttp
-import asyncio
 from pyrogram import filters
 from pyrogram.types import Message
 from Audify import app
@@ -22,7 +21,11 @@ async def upscale_image(_, message: Message):
 
     msg = await message.reply("🖼️ Upscaling the image... Please wait ⏳")
 
+    download_path = None
+    upscale_path = None
+
     try:
+        # Download original photo
         photo = message.reply_to_message.photo
         download_path = await photo.download()
         upscale_path = f"upscaled_{message.chat.id}.jpg"
@@ -57,6 +60,9 @@ async def upscale_image(_, message: Message):
         await msg.edit(f"❌ Error during upscaling:\n<code>{str(e)}</code>")
 
     finally:
-        for f in [download_path, upscale_path]:
+        for f in (download_path, upscale_path):
             if f and os.path.exists(f):
-                os.remove(f)
+                try:
+                    os.remove(f)
+                except Exception:
+                    pass
