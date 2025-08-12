@@ -9,6 +9,7 @@
 import requests
 from pyrogram import filters
 from pyrogram.types import Message
+from pyrogram.errors import ChatWriteForbidden, ChatRestricted, RPCError
 from Audify import app
 
 API_URL = "https://api.waifu.pics"
@@ -30,36 +31,45 @@ nsfw_actions = {
 }
 
 
-# ✅ Helper to send image with proper await
+# ✅ Helper to send image safely
 async def send_action_image(client, message: Message, action_type: str, category: str, emoji: str):
     try:
-        response = requests.get(f"{API_URL}/{action_type}/{category}")
+        response = requests.get(f"{API_URL}/{action_type}/{category}", timeout=10)
         if response.status_code == 200:
             image_url = response.json().get("url")
             if not image_url:
-                raise Exception("No image URL in response.")
+                raise ValueError("No image URL in API response.")
 
             user = message.from_user
             sender_name = f"[{user.first_name}](tg://user?id={user.id})"
 
-            if message.reply_to_message:
+            if message.reply_to_message and message.reply_to_message.from_user:
                 replied_user = message.reply_to_message.from_user
                 replied_name = f"[{replied_user.first_name}](tg://user?id={replied_user.id})"
                 caption = f"{sender_name} sent **{category}** to {replied_name} {emoji}"
             else:
                 caption = f"{sender_name} is feeling **{category}** {emoji}"
 
-            await client.send_animation(
-                chat_id=message.chat.id,
-                animation=image_url,
-                caption=caption,
-                parse_mode="markdown"
-            )
+            try:
+                await client.send_animation(
+                    chat_id=message.chat.id,
+                    animation=image_url,
+                    caption=caption,
+                    parse_mode="MarkdownV2"  # ✅ Fixed parse mode
+                )
+            except (ChatWriteForbidden, ChatRestricted):
+                print(f"[Waifu.pics] Chat restricted: {message.chat.id}")
+            except RPCError as e:
+                print(f"[Waifu.pics] Telegram RPC error: {e}")
+
         else:
             await message.reply_text("❌ Error occurred while fetching image.")
     except Exception as e:
         print(f"[Waifu.pics] Error: {e}")
-        await message.reply_text("❌ Failed to get image from API.")
+        try:
+            await message.reply_text("❌ Failed to get image from API.")
+        except ChatWriteForbidden:
+            pass
 
 
 # ✅ Register SFW handlers
