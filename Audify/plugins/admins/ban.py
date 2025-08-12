@@ -117,6 +117,8 @@ async def mute_user(user_id, first_name, admin_id, admin_name, chat_id, reason, 
     user_mention = mention(user_id, first_name)
     admin_mention = mention(admin_id, admin_name)
 
+    # ✅ FIX: Initialize msg_text before using +=
+    msg_text = ""
     msg_text += f"{user_mention} was muted by {admin_mention}\n"
     
     if reason:
