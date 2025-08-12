@@ -15,6 +15,7 @@ from pyrogram import filters
 from pyrogram.errors import (
     PeerIdInvalid,
     ShortnameOccupyFailed,
+    StickersetInvalid,
     StickerEmojiInvalid,
     StickerPngDimensions,
     StickerPngNopng,
@@ -127,7 +128,11 @@ async def kang(client, message: Message):
             if limit >= 50:
                 return await msg.delete()
 
-            stickerset = await get_sticker_set_by_name(client, packname)
+            try:
+                stickerset = await get_sticker_set_by_name(client, packname)
+            except StickersetInvalid:
+                stickerset = None
+
             if not stickerset:
                 await create_sticker_set(
                     client,
@@ -136,7 +141,7 @@ async def kang(client, message: Message):
                     packname,
                     [sticker],
                 )
-            elif stickerset.set.count >= MAX_STICKERS:
+            elif getattr(stickerset.set, "count", 0) >= MAX_STICKERS:
                 packnum += 1
                 packname = f"f{packnum}_{message.from_user.id}_by_{BOT_USERNAME}"
                 limit += 1
