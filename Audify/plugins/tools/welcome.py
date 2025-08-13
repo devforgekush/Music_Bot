@@ -83,6 +83,9 @@ async def auto_state(_, message: Message):
         return await message.reply_text(usage)
 
     chat_id = message.chat.id
+    if not message.from_user:
+        return await message.reply("**Cannot verify user.**")
+
     user = await app.get_chat_member(chat_id, message.from_user.id)
 
     if user.status in (enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER):
@@ -109,14 +112,23 @@ async def auto_state(_, message: Message):
 @app.on_chat_member_updated(filters.group, group=-3)
 async def greet_new_member(_, member: ChatMemberUpdated):
     chat_id = member.chat.id
-
     count = await get_cached_member_count(chat_id)
 
     A = await wlcm.find_one(chat_id)
     if A:
         return
 
-    user: User = member.new_chat_member.user if member.new_chat_member else member.from_user
+    # Safely get the User object
+    user = None
+    if member.new_chat_member and getattr(member.new_chat_member, "user", None):
+        user = member.new_chat_member.user
+    elif member.from_user:
+        user = member.from_user
+
+    # If no valid user object, skip
+    if not user:
+        LOGGER.warning(f"[WELCOME] No valid user object for chat {chat_id}, skipping welcome.")
+        return
 
     if member.new_chat_member and not member.old_chat_member and member.new_chat_member.status != "kicked":
         try:
