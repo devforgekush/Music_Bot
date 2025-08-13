@@ -11,13 +11,21 @@ import random
 from pyrogram import filters
 from Audify import app
 
+
+def safe_get_user_mention(message):
+    """Safely get a user's mention, or fallback text if from_user is None."""
+    if message.from_user:
+        return message.from_user.mention
+    return "Anonymous"
+
+
 # ✅ Good Night Handler
 @app.on_message(
     filters.text & filters.regex(r"(?i)\b(good\s?night|gn|night|sleep\s?time)\b")
     | filters.command(["gn", "goodnight", "night", "sleep", "n"])
 )
 async def goodnight_command_handler(_, message):
-    user = message.from_user.mention
+    user = safe_get_user_mention(message)
     emoji = get_random_night_emoji()
     text = get_random_night_message(user).replace("😴", emoji)
     await message.reply_text(text)
@@ -94,7 +102,7 @@ def get_random_night_message(user):
     | filters.command(["gm", "goodmorning", "morning", "m"])
 )
 async def goodmorning_command_handler(_, message):
-    user = message.from_user.mention
+    user = safe_get_user_mention(message)
     emoji = get_random_morning_emoji()
     text = get_random_morning_message(user).replace("🌞", emoji)
     await message.reply_text(text)
