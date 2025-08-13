@@ -1,3 +1,11 @@
+# ---------------------------------------------------------
+# Audify Bot - All rights reserved
+# ---------------------------------------------------------
+# This code is part of the Audify Bot project.
+# Unauthorized copying, distribution, or use is prohibited.
+# © Graybots™. All rights reserved.
+# ---------------------------------------------------------
+
 import asyncio
 from telegram import CallbackQuery
 from pyrogram import filters
@@ -35,6 +43,7 @@ from config import (
     STREAM_IMG_URL,
     TELEGRAM_AUDIO_URL,
     TELEGRAM_VIDEO_URL,
+    SUPPORT_CHAT,
     adminlist,
     confirmer,
     votemode,
