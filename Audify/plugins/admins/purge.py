@@ -12,8 +12,31 @@ from pyrogram.enums import ChatType
 from pyrogram.errors import MessageDeleteForbidden, RPCError
 from pyrogram.types import Message
 from Audify.utils.Audify_BAN import admin_filter
-from Audify.utils.inline import close_markup
 from Audify import app
+
+
+def divide_chunks(data, size=100):
+    """Yield successive n-sized chunks from data."""
+    for i in range(0, len(data), size):
+        yield data[i : i + size]
+
+
+async def safe_delete_messages(app, chat_id, message_ids):
+    """Delete messages in batches safely with error handling."""
+    grouped_ids = list(divide_chunks(message_ids))
+    deleted_count = 0
+
+    for batch in grouped_ids:
+        try:
+            await app.delete_messages(chat_id=chat_id, message_ids=batch, revoke=True)
+            deleted_count += len(batch)
+        except MessageDeleteForbidden:
+            # Skip messages we can't delete
+            continue
+        except RPCError:
+            continue
+
+    return deleted_count
 
 
 @app.on_message(filters.command("purge") & filters.group & admin_filter)
@@ -26,35 +49,26 @@ async def purge_messages(app, message: Message):
     if not message.reply_to_message:
         return await message.reply_text("✏️ Reply to a message to start purging from there.")
 
-    message_ids = list(range(message.reply_to_message.id, message.id))
+    message_ids = list(range(message.reply_to_message.id, message.id + 1))
 
-    def divide_chunks(data, size=100):
-        for i in range(0, len(data), size):
-            yield data[i : i + size]
-
-    grouped_ids = list(divide_chunks(message_ids))
+    deleted_count = await safe_delete_messages(app, message.chat.id, message_ids)
 
     try:
-        for batch in grouped_ids:
-            await app.delete_messages(chat_id=message.chat.id, message_ids=batch, revoke=True)
         await message.delete()
     except MessageDeleteForbidden:
-        return await message.reply_text(
-            "🚫 Unable to delete all messages. I may lack delete rights or the messages may be too old."
-        )
-    except RPCError as err:
-        return await message.reply_text(
-            f"⚠️ An unexpected error occurred. Please report with `/bug`\n\nError: `{err}`"
-        )
+        pass
 
-    count = len(message_ids)
-    confirmation = await message.reply_text(f"✅ Successfully deleted {count} messages.")
+    confirmation = await message.reply_text(f"✅ Successfully deleted {deleted_count} messages.")
     await sleep(3)
-    await confirmation.delete()
+    try:
+        await confirmation.delete()
+    except MessageDeleteForbidden:
+        pass
 
 
 @app.on_message(filters.command("spurge") & filters.group & admin_filter)
 async def silent_purge(app, message: Message):
+    """Same as purge, but without sending confirmation."""
     if message.chat.type != ChatType.SUPERGROUP:
         return await message.reply_text(
             "⚠️ I can't purge messages in a basic group. Please upgrade to a supergroup."
@@ -63,26 +77,14 @@ async def silent_purge(app, message: Message):
     if not message.reply_to_message:
         return await message.reply_text("✏️ Reply to a message to start silent purging.")
 
-    message_ids = list(range(message.reply_to_message.id, message.id))
+    message_ids = list(range(message.reply_to_message.id, message.id + 1))
 
-    def divide_chunks(data, size=100):
-        for i in range(0, len(data), size):
-            yield data[i : i + size]
-
-    grouped_ids = list(divide_chunks(message_ids))
+    await safe_delete_messages(app, message.chat.id, message_ids)
 
     try:
-        for batch in grouped_ids:
-            await app.delete_messages(chat_id=message.chat.id, message_ids=batch, revoke=True)
         await message.delete()
     except MessageDeleteForbidden:
-        return await message.reply_text(
-            "🚫 Unable to delete all messages. I may lack delete rights or the messages may be too old."
-        )
-    except RPCError as err:
-        return await message.reply_text(
-            f"⚠️ An unexpected error occurred. Please report with `/bug`\n\nError: `{err}`"
-        )
+        pass
 
 
 @app.on_message(filters.command("del") & filters.group & admin_filter)
@@ -93,7 +95,14 @@ async def delete_single_message(app, message: Message):
         )
 
     if not message.reply_to_message:
-        return await message.reply_text("✏️ What message do you want me to delete?")
+        return await message.reply_text("✏️ Reply to the message you want me to delete.")
 
-    await message.delete()
-    await app.delete_messages(chat_id=message.chat.id, message_ids=message.reply_to_message.id)
+    try:
+        await message.delete()
+    except MessageDeleteForbidden:
+        pass
+
+    try:
+        await app.delete_messages(chat_id=message.chat.id, message_ids=message.reply_to_message.id)
+    except MessageDeleteForbidden:
+        await message.reply_text("🚫 Unable to delete this message. I may lack permissions.")
