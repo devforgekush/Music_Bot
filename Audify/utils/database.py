@@ -520,26 +520,20 @@ async def whitelist_chat(chat_id: int) -> bool:
 
 
 async def _get_authusers(chat_id: int) -> Dict[str, int]:
-    _notes = await authuserdb.find_one({"chat_id": chat_id})
-    if not _notes:
-        return {}
-    return _notes["notes"]
+    _doc = await authuserdb.find_one({"chat_id": chat_id})
+    if not _doc:
+        return {}  # no document found
+    return _doc.get("notes", {})  # safely return empty dict if 'notes' missing
 
 
 async def get_authuser_names(chat_id: int) -> List[str]:
-    _notes = []
-    for note in await _get_authusers(chat_id):
-        _notes.append(note)
-    return _notes
+    authusers = await _get_authusers(chat_id)
+    return list(authusers.keys())  # cleaner way to get keys
 
 
 async def get_authuser(chat_id: int, name: str) -> Union[bool, dict]:
-    name = name
-    _notes = await _get_authusers(chat_id)
-    if name in _notes:
-        return _notes[name]
-    else:
-        return False
+    authusers = await _get_authusers(chat_id)
+    return authusers.get(name, False)  # return user data if exists, else False
 
 
 async def save_authuser(chat_id: int, name: str, note: dict):
