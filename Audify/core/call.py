@@ -1,3 +1,11 @@
+# ---------------------------------------------------------
+# Audify Bot - All rights reserved
+# ---------------------------------------------------------
+# This code is part of the Audify Bot project.
+# Unauthorized copying, distribution, or use is prohibited.
+# © Graybots™. All rights reserved.
+# ---------------------------------------------------------
+
 import asyncio
 import os
 from datetime import datetime, timedelta
@@ -356,117 +364,231 @@ class Call(PyTgCalls):
                 autoend[chat_id] = datetime.now() + timedelta(minutes=1)
 
     async def change_stream(self, client, chat_id):
-        check = db.get(chat_id)
-        popped = None
-        loop = await get_loop(chat_id)
-        try:
-            if loop == 0:
-                popped = check.pop(0)
-            else:
-                loop = loop - 1
-                await set_loop(chat_id, loop)
-            await auto_clean(popped)
-            if not check:
-                await _clear_(chat_id)
-                return await client.leave_group_call(chat_id)
-        except:
+        # Fetch and validate queue
+        check = db.get(chat_id) or []
+        if not check:
+            await _clear_(chat_id)
             try:
-                await _clear_(chat_id)
                 return await client.leave_group_call(chat_id)
             except:
                 return
+
+        popped = None
+        loop_val = await get_loop(chat_id)
+        try:
+            if loop_val == 0:
+                popped = check.pop(0)
+            else:
+                loop_val -= 1
+                await set_loop(chat_id, loop_val)
+
+            if popped:
+                await auto_clean(popped)
+
+            if not check:
+                await _clear_(chat_id)
+                return await client.leave_group_call(chat_id)
+        except Exception:
+            await _clear_(chat_id)
+            try:
+                return await client.leave_group_call(chat_id)
+            except:
+                return
+
+        # Safe to use check[0] now
+        queued = check[0]["file"]
+        language = await get_lang(chat_id)
+        _ = get_string(language)
+        title = (check[0]["title"]).title()
+        user = check[0]["by"]
+        original_chat_id = check[0]["chat_id"]
+        streamtype = check[0]["streamtype"]
+        videoid = check[0]["vidid"]
+
+        # Reset played and speed-modified fields
+        db[chat_id][0]["played"] = 0
+        exis = check[0].get("old_dur")
+        if exis:
+            db[chat_id][0]["dur"] = exis
+            db[chat_id][0]["seconds"] = check[0]["old_second"]
+            db[chat_id][0]["speed_path"] = None
+            db[chat_id][0]["speed"] = 1.0
+
+        is_video = str(streamtype) == "video"
+
+        if "live_" in queued:
+            n, link = await YouTube.video(videoid, True)
+            if n == 0:
+                return await app.send_message(
+                    original_chat_id,
+                    text=_["call_6"],
+                )
+            if is_video:
+                stream = MediaStream(
+                    link,
+                    audio_parameters=AudioQuality.HIGH,
+                    video_parameters=VideoQuality.SD_480p,
+                )
+            else:
+                stream = MediaStream(
+                    link,
+                    audio_parameters=AudioQuality.HIGH,
+                    video_flags=MediaStream.IGNORE,
+                )
+            try:
+                await client.change_stream(chat_id, stream)
+            except Exception:
+                return await app.send_message(
+                    original_chat_id,
+                    text=_["call_6"],
+                )
+            img = await get_thumb(videoid)
+            button = stream_markup(_, chat_id)
+            run = await app.send_photo(
+                chat_id=original_chat_id,
+                photo=img,
+                caption=_["stream_1"].format(
+                    f"https://t.me/{app.username}?start=info_{videoid}",
+                    title[:23],
+                    check[0]["dur"],
+                    user,
+                ),
+                reply_markup=InlineKeyboardMarkup(button),
+            )
+            db[chat_id][0]["mystic"] = run
+            db[chat_id][0]["markup"] = "tg"
+
+        elif "vid_" in queued:
+            mystic = await app.send_message(original_chat_id, _["call_7"])
+            try:
+                file_path, direct = await YouTube.download(
+                    videoid,
+                    mystic,
+                    videoid=True,
+                    video=is_video,
+                )
+            except:
+                return await mystic.edit_text(
+                    _["call_6"], disable_web_page_preview=True
+                )
+            if is_video:
+                stream = MediaStream(
+                    file_path,
+                    audio_parameters=AudioQuality.HIGH,
+                    video_parameters=VideoQuality.SD_480p,
+                )
+            else:
+                stream = MediaStream(
+                    file_path,
+                    audio_parameters=AudioQuality.HIGH,
+                    video_flags=MediaStream.IGNORE,
+                )
+            try:
+                await client.change_stream(chat_id, stream)
+            except:
+                return await app.send_message(
+                    original_chat_id,
+                    text=_["call_6"],
+                )
+            img = await get_thumb(videoid)
+            button = stream_markup(_, chat_id)
+            await mystic.delete()
+            run = await app.send_photo(
+                chat_id=original_chat_id,
+                photo=img,
+                caption=_["stream_1"].format(
+                    f"https://t.me/{app.username}?start=info_{videoid}",
+                    title[:23],
+                    check[0]["dur"],
+                    user,
+                ),
+                reply_markup=InlineKeyboardMarkup(button),
+            )
+            db[chat_id][0]["mystic"] = run
+            db[chat_id][0]["markup"] = "stream"
+
+        elif "index_" in queued:
+            stream = (
+                MediaStream(
+                    videoid,
+                    audio_parameters=AudioQuality.HIGH,
+                    video_parameters=VideoQuality.SD_480p,
+                )
+                if is_video
+                else MediaStream(
+                    videoid,
+                    audio_parameters=AudioQuality.HIGH,
+                    video_flags=MediaStream.IGNORE,
+                )
+            )
+            try:
+                await client.change_stream(chat_id, stream)
+            except:
+                return await app.send_message(
+                    original_chat_id,
+                    text=_["call_6"],
+                )
+            button = stream_markup(_, chat_id)
+            run = await app.send_photo(
+                chat_id=original_chat_id,
+                photo=config.STREAM_IMG_URL,
+                caption=_["stream_2"].format(user),
+                reply_markup=InlineKeyboardMarkup(button),
+            )
+            db[chat_id][0]["mystic"] = run
+            db[chat_id][0]["markup"] = "tg"
+
         else:
-            queued = check[0]["file"]
-            language = await get_lang(chat_id)
-            _ = get_string(language)
-            title = (check[0]["title"]).title()
-            user = check[0]["by"]
-            original_chat_id = check[0]["chat_id"]
-            streamtype = check[0]["streamtype"]
-            videoid = check[0]["vidid"]
-            db[chat_id][0]["played"] = 0
-            if exis := (check[0]).get("old_dur"):
-                db[chat_id][0]["dur"] = exis
-                db[chat_id][0]["seconds"] = check[0]["old_second"]
-                db[chat_id][0]["speed_path"] = None
-                db[chat_id][0]["speed"] = 1.0
-            video = str(streamtype) == "video"
-            if "live_" in queued:
-                n, link = await YouTube.video(videoid, True)
-                if n == 0:
-                    return await app.send_message(
-                        original_chat_id,
-                        text=_["call_6"],
-                    )
-                if video:
-                    stream = MediaStream(
-                        link,
-                        audio_parameters=AudioQuality.HIGH,
-                        video_parameters=VideoQuality.SD_480p,
-                    )
-                else:
-                    stream = MediaStream(
-                        link,
-                        audio_parameters=AudioQuality.HIGH,
-                        video_flags=MediaStream.IGNORE,
-                    )
-                try:
-                    await client.change_stream(chat_id, stream)
-                except Exception:
-                    return await app.send_message(
-                        original_chat_id,
-                        text=_["call_6"],
-                    )
-                img = await get_thumb(videoid)
+            if is_video:
+                stream = MediaStream(
+                    queued,
+                    audio_parameters=AudioQuality.HIGH,
+                    video_parameters=VideoQuality.SD_480p,
+                )
+            else:
+                stream = MediaStream(
+                    queued,
+                    audio_parameters=AudioQuality.HIGH,
+                    video_flags=MediaStream.IGNORE,
+                )
+            try:
+                await client.change_stream(chat_id, stream)
+            except:
+                return await app.send_message(
+                    original_chat_id,
+                    text=_["call_6"],
+                )
+            if videoid == "telegram":
                 button = stream_markup(_, chat_id)
                 run = await app.send_photo(
                     chat_id=original_chat_id,
-                    photo=img,
+                    photo=(
+                        config.TELEGRAM_AUDIO_URL
+                        if str(streamtype) == "audio"
+                        else config.TELEGRAM_VIDEO_URL
+                    ),
                     caption=_["stream_1"].format(
-                        f"https://t.me/{app.username}?start=info_{videoid}",
-                        title[:23],
-                        check[0]["dur"],
-                        user,
+                        config.SUPPORT_CHAT, title[:23], check[0]["dur"], user
                     ),
                     reply_markup=InlineKeyboardMarkup(button),
                 )
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "tg"
-            elif "vid_" in queued:
-                mystic = await app.send_message(original_chat_id, _["call_7"])
-                try:
-                    file_path, direct = await YouTube.download(
-                        videoid,
-                        mystic,
-                        videoid=True,
-                        video=str(streamtype) == "video",
-                    )
-                except:
-                    return await mystic.edit_text(
-                        _["call_6"], disable_web_page_preview=True
-                    )
-                if video:
-                    stream = MediaStream(
-                        file_path,
-                        audio_parameters=AudioQuality.HIGH,
-                        video_parameters=VideoQuality.SD_480p,
-                    )
-                else:
-                    stream = MediaStream(
-                        file_path,
-                        audio_parameters=AudioQuality.HIGH,
-                        video_flags=MediaStream.IGNORE,
-                    )
-                try:
-                    await client.change_stream(chat_id, stream)
-                except:
-                    return await app.send_message(
-                        original_chat_id,
-                        text=_["call_6"],
-                    )
+            elif videoid == "soundcloud":
+                button = stream_markup(_, chat_id)
+                run = await app.send_photo(
+                    chat_id=original_chat_id,
+                    photo=config.SOUNCLOUD_IMG_URL,
+                    caption=_["stream_1"].format(
+                        config.SUPPORT_CHAT, title[:23], check[0]["dur"], user
+                    ),
+                    reply_markup=InlineKeyboardMarkup(button),
+                )
+                db[chat_id][0]["mystic"] = run
+                db[chat_id][0]["markup"] = "tg"
+            else:
                 img = await get_thumb(videoid)
                 button = stream_markup(_, chat_id)
-                await mystic.delete()
                 run = await app.send_photo(
                     chat_id=original_chat_id,
                     photo=img,
@@ -480,100 +602,6 @@ class Call(PyTgCalls):
                 )
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "stream"
-            elif "index_" in queued:
-                stream = (
-                    MediaStream(
-                        videoid,
-                        audio_parameters=AudioQuality.HIGH,
-                        video_parameters=VideoQuality.SD_480p,
-                    )
-                    if str(streamtype) == "video"
-                    else MediaStream(
-                        videoid,
-                        audio_parameters=AudioQuality.HIGH,
-                        video_flags=MediaStream.IGNORE,
-                    )
-                )
-                try:
-                    await client.change_stream(chat_id, stream)
-                except:
-                    return await app.send_message(
-                        original_chat_id,
-                        text=_["call_6"],
-                    )
-                button = stream_markup(_, chat_id)
-                run = await app.send_photo(
-                    chat_id=original_chat_id,
-                    photo=config.STREAM_IMG_URL,
-                    caption=_["stream_2"].format(user),
-                    reply_markup=InlineKeyboardMarkup(button),
-                )
-                db[chat_id][0]["mystic"] = run
-                db[chat_id][0]["markup"] = "tg"
-            else:
-                if video:
-                    stream = MediaStream(
-                        queued,
-                        audio_parameters=AudioQuality.HIGH,
-                        video_parameters=VideoQuality.SD_480p,
-                    )
-                else:
-                    stream = MediaStream(
-                        queued,
-                        audio_parameters=AudioQuality.HIGH,
-                        video_flags=MediaStream.IGNORE,
-                    )
-                try:
-                    await client.change_stream(chat_id, stream)
-                except:
-                    return await app.send_message(
-                        original_chat_id,
-                        text=_["call_6"],
-                    )
-                if videoid == "telegram":
-                    button = stream_markup(_, chat_id)
-                    run = await app.send_photo(
-                        chat_id=original_chat_id,
-                        photo=(
-                            config.TELEGRAM_AUDIO_URL
-                            if str(streamtype) == "audio"
-                            else config.TELEGRAM_VIDEO_URL
-                        ),
-                        caption=_["stream_1"].format(
-                            config.SUPPORT_CHAT, title[:23], check[0]["dur"], user
-                        ),
-                        reply_markup=InlineKeyboardMarkup(button),
-                    )
-                    db[chat_id][0]["mystic"] = run
-                    db[chat_id][0]["markup"] = "tg"
-                elif videoid == "soundcloud":
-                    button = stream_markup(_, chat_id)
-                    run = await app.send_photo(
-                        chat_id=original_chat_id,
-                        photo=config.SOUNCLOUD_IMG_URL,
-                        caption=_["stream_1"].format(
-                            config.SUPPORT_CHAT, title[:23], check[0]["dur"], user
-                        ),
-                        reply_markup=InlineKeyboardMarkup(button),
-                    )
-                    db[chat_id][0]["mystic"] = run
-                    db[chat_id][0]["markup"] = "tg"
-                else:
-                    img = await get_thumb(videoid)
-                    button = stream_markup(_, chat_id)
-                    run = await app.send_photo(
-                        chat_id=original_chat_id,
-                        photo=img,
-                        caption=_["stream_1"].format(
-                            f"https://t.me/{app.username}?start=info_{videoid}",
-                            title[:23],
-                            check[0]["dur"],
-                            user,
-                        ),
-                        reply_markup=InlineKeyboardMarkup(button),
-                    )
-                    db[chat_id][0]["mystic"] = run
-                    db[chat_id][0]["markup"] = "stream"
 
     async def ping(self):
         pings = []
@@ -629,6 +657,7 @@ class Call(PyTgCalls):
         async def stream_end_handler(client, update: Update):
             if not isinstance(update, StreamAudioEnded):
                 return
+            # change_stream is now safe against empty queues
             await self.change_stream(client, update.chat_id)
 
 
