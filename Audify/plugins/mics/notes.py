@@ -26,6 +26,9 @@ from pyrogram.enums import ChatMemberStatus
 @app.on_message(filters.command("save") & admin_filter)
 @user_admin
 async def save_note_handler(client, message: Message):
+    if not message.text and not message.caption:
+        return await message.reply("❌ Please provide note name and content.")
+
     chat_id = message.chat.id
     chat_title = message.chat.title
 
@@ -44,6 +47,9 @@ async def save_note_handler(client, message: Message):
 
 @app.on_message(filters.command("get") & admin_filter)
 async def get_note_handler(client, message: Message):
+    if not message.text:
+        return await message.reply("🔹 Please specify the note name.")
+
     chat_id = message.chat.id
     if len(message.command) < 2:
         return await message.reply("🔹 Please specify the note name.")
@@ -57,10 +63,12 @@ async def get_note_handler(client, message: Message):
 
 @app.on_message(filters.regex(r"^#[^\s]+") & filters.group)
 async def hashtag_note_handler(client, message: Message):
-    chat_id = message.chat.id
-    note_name = message.text.split()[0][1:]
+    text = message.text or message.caption
+    if not text:
+        return  # Ignore if no text or caption
 
-    if await isNoteExist(chat_id, note_name):
+    note_name = text.split()[0][1:]
+    if await isNoteExist(message.chat.id, note_name):
         await send_note(message, note_name)
 
 
@@ -73,11 +81,9 @@ async def private_note_toggle(client, message: Message):
         if arg in ['on', 'true', 'yes', 'y']:
             await set_private_note(chat_id, True)
             return await message.reply("🔒 Notes will now be sent in private chat.")
-
         elif arg in ['off', 'false', 'no', 'n']:
             await set_private_note(chat_id, False)
             return await message.reply("📢 Notes will now be shown in the group.")
-
         else:
             return await message.reply("❌ Invalid option. Use on/off or true/false.")
     else:
@@ -91,10 +97,10 @@ async def private_note_toggle(client, message: Message):
 @app.on_message(filters.command("clear") & admin_filter)
 @user_admin
 async def clear_note_handler(client, message: Message):
-    chat_id = message.chat.id
-    if len(message.command) < 2:
+    if not message.text or len(message.command) < 2:
         return await message.reply("🔹 Please specify the note name to delete.")
 
+    chat_id = message.chat.id
     note_name = message.command[1].lower()
     if await isNoteExist(chat_id, note_name):
         await ClearNote(chat_id, note_name)
@@ -182,6 +188,11 @@ async def send_private_button(message: Message, chat_id, note_name):
 
 
 async def note_redirect(message: Message):
-    chat_id = int(message.command[1].split('_')[1])
-    note_name = message.command[1].split('_')[2]
+    if not message.text or len(message.command) < 2:
+        return
+    parts = message.command[1].split('_')
+    if len(parts) < 3:
+        return
+    chat_id = int(parts[1])
+    note_name = parts[2]
     await exceNoteMessageSender(message, note_name, from_chat_id=chat_id)
