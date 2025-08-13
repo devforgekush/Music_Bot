@@ -136,7 +136,8 @@ async def remove_filter(_, message: Message):
     chat_id = message.chat.id
 
     if len(message.command) < 2:
-        return await message.reply("⚠️ Usage: `/stopfilter <filter name>`")
+        # Escape angle brackets to avoid Markdown entity errors
+        return await message.reply("⚠️ Usage: `/stopfilter \<filter name\>`")
 
     filter_name = message.command[1].lower()
     all_filters = await get_filters_list(chat_id)
