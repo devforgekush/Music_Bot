@@ -8,14 +8,16 @@
 
 import os
 import textwrap
+import subprocess
 from PIL import Image, ImageDraw, ImageFont
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
-from Audify import app  # Change to Audify if needed
+from Audify import app
 
 # Close button markup
 CLOSE_BTN = InlineKeyboardMarkup([[InlineKeyboardButton("⏹ Close", callback_data="close")]])
+
 
 @app.on_message(filters.command("mmf"))
 async def mmf(_, message: Message):
@@ -32,6 +34,21 @@ async def mmf(_, message: Message):
     text = message.text.split(None, 1)[1]
     file = await app.download_media(reply)
 
+    # Convert webm (video stickers) to PNG
+    if file.lower().endswith(".webm"):
+        png_path = file.rsplit(".", 1)[0] + ".png"
+        try:
+            subprocess.run(
+                ["ffmpeg", "-i", file, "-vf", "scale=512:-1", "-vframes", "1", png_path],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
+            )
+            os.remove(file)
+            file = png_path
+        except Exception:
+            await msg.delete()
+            os.remove(file)
+            return await message.reply_text("❌ Could not process this video sticker.")
+
     meme = await drawText(file, text)
     await message.reply_document(document=meme, caption="✅ Meme created successfully!", reply_markup=CLOSE_BTN)
 
@@ -40,23 +57,22 @@ async def mmf(_, message: Message):
 
 
 async def drawText(image_path, text):
-    img = Image.open(image_path)
+    img = Image.open(image_path).convert("RGB")
     os.remove(image_path)
 
     i_width, i_height = img.size
-
     font_path = "./Audify/assets/default.ttf" if os.name != "nt" else "arial.ttf"
     m_font = ImageFont.truetype(font_path, int((70 / 640) * i_width))
 
     if ";" in text:
         upper_text, lower_text = text.split(";", 1)
     else:
-        upper_text = text
-        lower_text = ""
+        upper_text, lower_text = text, ""
 
     draw = ImageDraw.Draw(img)
     current_h, pad = 10, 5
 
+    # Upper text
     if upper_text:
         for u_text in textwrap.wrap(upper_text.strip(), width=15):
             u_width, u_height = draw.textsize(u_text, font=m_font)
@@ -71,6 +87,7 @@ async def drawText(image_path, text):
             draw.text(((i_width - u_width) / 2, int((current_h / 640) * i_width)), u_text, font=m_font, fill=(255, 255, 255))
             current_h += u_height + pad
 
+    # Lower text
     if lower_text:
         for l_text in textwrap.wrap(lower_text.strip(), width=15):
             u_width, u_height = draw.textsize(l_text, font=m_font)
