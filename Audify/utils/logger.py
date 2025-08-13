@@ -14,6 +14,13 @@ from config import LOGGER_ID
 
 async def play_logs(message, streamtype):
     if await is_on_off(2):
+        # Safely get query text
+        if message.text:
+            parts = message.text.split(None, 1)
+            query = parts[1] if len(parts) > 1 else "No query provided"
+        else:
+            query = "No query provided"
+
         logger_text = f"""
 <b>🎧 Audify Play Log</b>
 
@@ -28,7 +35,7 @@ async def play_logs(message, streamtype):
 └ Username: @{message.from_user.username if message.from_user.username else 'N/A'}
 
 <b>🎵 Playback Info</b>
-├ Query: <code>{message.text.split(None, 1)[1]}</code>
+├ Query: <code>{query}</code>
 └ Stream Type: <code>{streamtype}</code>
 """
         if message.chat.id != LOGGER_ID:
