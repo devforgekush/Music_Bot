@@ -16,7 +16,7 @@ from typing import Union
 
 import aiohttp
 from pyrogram import Client, filters, enums
-from pyrogram.errors import RPCError, FloodWait
+from pyrogram.errors import RPCError, FloodWait, ChatAdminRequired, ChatWriteForbidden, ChannelPrivate
 from pyrogram.enums import ParseMode
 from pyrogram.types import ChatMemberUpdated, Message
 
@@ -78,6 +78,9 @@ async def get_cached_member_count(chat_id: int) -> Union[int, str]:
         LOGGER.warning(f"[WELCOME] FloodWait {e.value}s while fetching member count for {chat_id}")
         await asyncio.sleep(e.value)
         return await get_cached_member_count(chat_id)
+    except (ChannelPrivate, ChatAdminRequired, ChatWriteForbidden):
+        # Bot no longer has access, skip
+        return "N/A"
     except RPCError as e:
         LOGGER.warning(f"[WELCOME] Could not fetch member count for {chat_id}: {e}")
         return "N/A"
@@ -97,7 +100,11 @@ async def toggle_welcome(_, message: Message):
     if not message.from_user:
         return await message.reply("**Cannot verify user.**")
 
-    member = await app.get_chat_member(chat_id, message.from_user.id)
+    try:
+        member = await app.get_chat_member(chat_id, message.from_user.id)
+    except Exception:
+        return await message.reply("**Failed to check admin status.**")
+
     if member.status not in (enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER):
         return await message.reply("**Only group admins can change welcome settings.**")
 
@@ -132,7 +139,7 @@ async def greet_new_member(_, member: ChatMemberUpdated):
         user = member.from_user
 
     if not user:
-        LOGGER.warning(f"[WELCOME] No valid user object for chat {chat_id}, skipping welcome.")
+        LOGGER.debug(f"[WELCOME] No valid user object for chat {chat_id}, skipping welcome.")
         return
 
     # Skip if kicked/banned
@@ -203,15 +210,17 @@ async def greet_new_member(_, member: ChatMemberUpdated):
         welcome_text = random.choice(welcome_messages)
 
     # -------------------
-    # Send message
+    # Send message safely
     # -------------------
     try:
         # Delete previous non-VIP welcome
         if temp.MELCOW.get(f"welcome-{chat_id}") is not None:
             try:
                 await temp.MELCOW[f"welcome-{chat_id}"].delete()
+            except (ChannelPrivate, ChatAdminRequired, ChatWriteForbidden):
+                LOGGER.info(f"[WELCOME] Skipped deleting old welcome in {chat_id} (no access).")
             except Exception as e:
-                LOGGER.error(f"[WELCOME] Failed to delete old welcome: {e}")
+                LOGGER.debug(f"[WELCOME] Failed to delete old welcome in {chat_id}: {e}")
 
         msg = await app.send_message(
             chat_id,
@@ -223,5 +232,7 @@ async def greet_new_member(_, member: ChatMemberUpdated):
         if user.id != OWNER_ID and user.id not in SUDOERS:
             temp.MELCOW[f"welcome-{chat_id}"] = msg
 
+    except (ChannelPrivate, ChatWriteForbidden):
+        LOGGER.info(f"[WELCOME] Cannot send welcome in {chat_id} (no access). Skipping.")
     except Exception as e:
-        LOGGER.error(f"[WELCOME] Failed to send welcome message in {chat_id}: {e}")
+        LOGGER.debug(f"[WELCOME] Failed to send welcome in {chat_id}: {e}")
