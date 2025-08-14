@@ -13,6 +13,8 @@ from Audify.utils.database import authuserdb
 from Audify.utils.Audify_BAN import admin_filter
 
 
+# ========== Database Helpers ==========
+
 async def get_approved_users(chat_id: int):
     chat = await authuserdb.find_one({"chat_id": chat_id})
     return chat.get("approved_users", []) if chat else []
@@ -47,46 +49,53 @@ async def clear_all_approvals(chat_id: int):
     )
 
 
+# ========== Commands ==========
+
+# /approval -> Check approval status
+@app.on_message(filters.command("approval"))
+async def approval_status(_, message: Message):
+    user = message.reply_to_message.from_user if message.reply_to_message else message.from_user
+    status = await is_user_approved(message.chat.id, user.id)
+    if status:
+        await message.reply(f"✅ [User](tg://user?id={user.id}) is approved in this chat.")
+    else:
+        await message.reply(f"❌ [User](tg://user?id={user.id}) is NOT approved in this chat.")
+
+
+# /approve -> Approve user
 @app.on_message(filters.command("approve") & admin_filter)
 async def approve_cmd(_, message: Message):
     if not message.reply_to_message:
         return await message.reply("❗ Reply to a user to approve them.")
-    user_id = message.reply_to_message.from_user.id
-    await approve_user(message.chat.id, user_id)
-    await message.reply(f"✅ [User](tg://user?id={user_id}) has been approved.")
+    user = message.reply_to_message.from_user
+    await approve_user(message.chat.id, user.id)
+    await message.reply(f"✅ [User](tg://user?id={user.id}) has been approved.")
 
 
+# /unapprove -> Unapprove user
 @app.on_message(filters.command("unapprove") & admin_filter)
 async def unapprove_cmd(_, message: Message):
     if not message.reply_to_message:
         return await message.reply("❗ Reply to a user to unapprove them.")
-    user_id = message.reply_to_message.from_user.id
-    await unapprove_user(message.chat.id, user_id)
-    await message.reply(f"❌ [User](tg://user?id={user_id}) has been unapproved.")
+    user = message.reply_to_message.from_user
+    await unapprove_user(message.chat.id, user.id)
+    await message.reply(f"❌ [User](tg://user?id={user.id}) has been unapproved.")
 
 
-@app.on_message(filters.command("approval") & admin_filter)
-async def check_approval_cmd(_, message: Message):
-    if not message.reply_to_message:
-        return await message.reply("❗ Reply to a user to check their approval status.")
-    user_id = message.reply_to_message.from_user.id
-    approved = await is_user_approved(message.chat.id, user_id)
-    status = "✅ Approved" if approved else "🚫 Not Approved"
-    await message.reply(f"{status}: [User](tg://user?id={user_id})")
-
-
+# /approved -> List all approved users
 @app.on_message(filters.command("approved") & admin_filter)
-async def approved_list_cmd(_, message: Message):
+async def approved_list(_, message: Message):
     users = await get_approved_users(message.chat.id)
     if not users:
-        return await message.reply("📭 No approved users found.")
-    msg = "✅ Approved Users:\n\n"
-    for uid in users:
-        msg += f"• [User](tg://user?id={uid}) (`{uid}`)\n"
-    await message.reply(msg)
+        return await message.reply("ℹ️ No approved users in this chat.")
+    text = "✅ **Approved users in this chat:**\n\n"
+    for i, user_id in enumerate(users, 1):
+        text += f"{i}. [User](tg://user?id={user_id})\n"
+    await message.reply(text)
 
 
+# /unapproveall -> Remove all approvals
 @app.on_message(filters.command("unapproveall") & admin_filter)
-async def unapprove_all_cmd(_, message: Message):
+async def unapprove_all(_, message: Message):
     await clear_all_approvals(message.chat.id)
-    await message.reply("🗑️ All approved users have been unapproved.")
+    await message.reply("⚠️ All users have been unapproved in this chat.")
