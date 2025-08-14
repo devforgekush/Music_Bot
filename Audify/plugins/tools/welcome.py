@@ -48,12 +48,7 @@ wlcm = WelDatabase()
 # Temporary store
 # -------------------------------
 class temp:
-    ME = None
-    CURRENT = 2
-    CANCEL = False
-    MELCOW = {}
-    U_NAME = None
-    B_NAME = None
+    MELCOW = {}  # {chat_id: last_welcome_message}
 
 
 # -------------------------------
@@ -79,7 +74,6 @@ async def get_cached_member_count(chat_id: int) -> Union[int, str]:
         await asyncio.sleep(e.value)
         return await get_cached_member_count(chat_id)
     except (ChannelPrivate, ChatAdminRequired, ChatWriteForbidden):
-        # Bot no longer has access, skip
         return "N/A"
     except RPCError as e:
         LOGGER.warning(f"[WELCOME] Could not fetch member count for {chat_id}: {e}")
@@ -120,7 +114,7 @@ async def toggle_welcome(_, message: Message):
 
 
 # -------------------------------
-# Greet new members
+# Greet new members (fixed)
 # -------------------------------
 @app.on_chat_member_updated(filters.group, group=-3)
 async def greet_new_member(_, member: ChatMemberUpdated):
@@ -129,22 +123,19 @@ async def greet_new_member(_, member: ChatMemberUpdated):
     if not enabled:
         return
 
-    count = await get_cached_member_count(chat_id)
+    # Process only real joins
+    if not member.new_chat_member:
+        return
+    if member.old_chat_member and member.old_chat_member.status in ["member", "administrator", "owner"]:
+        return
+    if member.new_chat_member.status != "member":
+        return
 
-    # Get the joining user
-    user = None
-    if member.new_chat_member and getattr(member.new_chat_member, "user", None):
-        user = member.new_chat_member.user
-    elif member.from_user:
-        user = member.from_user
-
+    user = member.new_chat_member.user
     if not user:
-        LOGGER.debug(f"[WELCOME] No valid user object for chat {chat_id}, skipping welcome.")
         return
 
-    # Skip if kicked/banned
-    if member.new_chat_member and member.new_chat_member.status == "kicked":
-        return
+    await get_cached_member_count(chat_id)
 
     # -------------------
     # VIP welcome logic
@@ -210,17 +201,14 @@ async def greet_new_member(_, member: ChatMemberUpdated):
         welcome_text = random.choice(welcome_messages)
 
     # -------------------
-    # Send message safely
+    # Send + delete old
     # -------------------
     try:
-        # Delete previous non-VIP welcome
         if temp.MELCOW.get(f"welcome-{chat_id}") is not None:
             try:
                 await temp.MELCOW[f"welcome-{chat_id}"].delete()
-            except (ChannelPrivate, ChatAdminRequired, ChatWriteForbidden):
-                LOGGER.info(f"[WELCOME] Skipped deleting old welcome in {chat_id} (no access).")
-            except Exception as e:
-                LOGGER.debug(f"[WELCOME] Failed to delete old welcome in {chat_id}: {e}")
+            except Exception:
+                pass
 
         msg = await app.send_message(
             chat_id,
@@ -228,11 +216,8 @@ async def greet_new_member(_, member: ChatMemberUpdated):
             parse_mode=ParseMode.HTML,
         )
 
-        # Store only normal welcome (VIP should persist)
         if user.id != OWNER_ID and user.id not in SUDOERS:
             temp.MELCOW[f"welcome-{chat_id}"] = msg
 
-    except (ChannelPrivate, ChatWriteForbidden):
-        LOGGER.info(f"[WELCOME] Cannot send welcome in {chat_id} (no access). Skipping.")
     except Exception as e:
-        LOGGER.debug(f"[WELCOME] Failed to send welcome in {chat_id}: {e}")
+        LOGGER.debug(f"[WELCOME] Failed in {chat_id}: {e}")
