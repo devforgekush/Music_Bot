@@ -1,86 +1,89 @@
+from pyrogram import Client, filters
+import instaloader
+import requests
 import os
 import re
-import yt_dlp
-from random import randint
-from mimetypes import guess_type
-from pyrogram import filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InputMediaPhoto, InputMediaVideo
 
-from Audify import app
-from config import LOGGER_ID
+from Audify import app 
 
-DOWNLOAD_DIR = "downloads"
-if not os.path.exists(DOWNLOAD_DIR):
-    os.makedirs(DOWNLOAD_DIR)
+# Create a global Instaloader instance
+L = instaloader.Instaloader()
 
-def is_video(file_path):
-    mime = guess_type(file_path)[0]
-    return mime and mime.startswith("video")
+# Regex to match Instagram URLs (post/reel/tv/stories)
+INSTAGRAM_REGEX = r"(https?://(?:www\.)?instagram\.com/(?:p|reel|tv|stories)/[A-Za-z0-9_-]+/?)"
 
-def is_image(file_path):
-    mime = guess_type(file_path)[0]
-    return mime and mime.startswith("image")
+# Extract Instagram URL from text
+def extract_instagram_url(text: str):
+    match = re.search(INSTAGRAM_REGEX, text)
+    return match.group(0) if match else None
 
-@app.on_message(filters.command(["ig", "instagram", "reel"]))
-async def download_instagram_media(client, message: Message):
-    if len(message.command) < 2:
-        return await message.reply_text("❗ Please provide the Instagram URL after the command.")
-
-    url = message.text.split()[1]
-
-    if not re.match(r"^(https?://)?(www\.)?(instagram\.com|instagr\.am)/.*$", url):
-        return await message.reply_text("❌ The provided URL is not a valid Instagram link.")
-
-    status_msg = await message.reply_text("📥 Downloading media from Instagram...")
-
+# Download Instagram media using Instaloader
+def download_instagram_media(url: str):
     try:
-        ydl_opts = {
-            'outtmpl': f'{DOWNLOAD_DIR}/%(title).70s_{randint(1000,9999)}.%(ext)s',
-            'format': 'bestvideo+bestaudio/best',
-            'merge_output_format': 'mp4',
-            'quiet': True,
-            'no_warnings': True
-        }
+        shortcode = url.strip("/").split("/")[-1]
+        post = instaloader.Post.from_shortcode(L.context, shortcode)
 
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=True)
-            results = info['entries'] if 'entries' in info else [info]
+        media_files = []
 
-            for entry in results:
-                file_path = ydl.prepare_filename(entry)
-                if not os.path.exists(file_path):
-                    continue
+        if post.typename == "GraphSidecar":  # multiple media
+            for index, node in enumerate(post.get_sidecar_nodes()):
+                media_url = node.video_url if node.is_video else node.display_url
+                ext = "mp4" if node.is_video else "jpg"
+                filename = f"media_{index}.{ext}"
 
-                ig_url = entry.get('webpage_url', url)
-                buttons = InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🌐 View on Instagram", url=ig_url)]
-                ])
+                r = requests.get(media_url, timeout=15)
+                with open(filename, "wb") as f:
+                    f.write(r.content)
+                media_files.append((filename, ext))
+        else:
+            media_url = post.video_url if post.is_video else post.url
+            ext = "mp4" if post.is_video else "jpg"
+            filename = f"media.{ext}"
 
-                await status_msg.delete()
+            r = requests.get(media_url, timeout=15)
+            with open(filename, "wb") as f:
+                f.write(r.content)
+            media_files.append((filename, ext))
 
-                if is_video(file_path):
-                    await message.reply_video(
-                        video=file_path,
-                        reply_markup=buttons,
-                        supports_streaming=True
-                    )
-                elif is_image(file_path):
-                    await message.reply_photo(
-                        photo=file_path,
-                        reply_markup=buttons
-                    )
-                else:
-                    await message.reply_document(
-                        document=file_path,
-                        reply_markup=buttons
-                    )
-
-                os.remove(file_path)
+        return media_files, None
 
     except Exception as e:
-        error_msg = f"❌ Error while downloading:\n`{e}`"
+        return None, str(e)
+
+# Auto handler for messages with Instagram links
+@app.on_message(filters.text & (filters.private | filters.group))
+async def auto_reel_handler(client, message):
+    url = extract_instagram_url(message.text)
+    if not url:
+        return  # ignore if no Instagram link
+
+    processing = await message.reply("⏳ Downloading...")
+
+    media_files, error = download_instagram_media(url)
+    if error:
+        return await processing.edit(f"❌ Error: {error}")
+
+    group = []
+    for i, (filename, ext) in enumerate(media_files):
         try:
-            await status_msg.edit(error_msg)
+            if ext == "mp4":
+                group.append(InputMediaVideo(media=filename))
+            else:
+                group.append(InputMediaPhoto(media=filename))
+
+            # Send in batches of 10 (Telegram limit)
+            if len(group) == 10 or i == len(media_files) - 1:
+                await client.send_media_group(chat_id=message.chat.id, media=group)
+                group = []
+        except Exception as e:
+            await message.reply(f"⚠️ Failed to send media: {e}")
+
+    await processing.delete()
+
+    # Cleanup
+    for filename, _ in media_files:
+        try:
+            os.remove(filename)
         except:
-            await message.reply_text(error_msg)
-        await app.send_message(LOGGER_ID, error_msg)
+            pass
