@@ -28,14 +28,15 @@ async def init():
         and not config.STRING3
         and not config.STRING4
         and not config.STRING5
+    ):
+        LOGGER(__name__).error("🚫 String Session Missing! Please configure at least one Pyrogram session string.")
+        exit()
+    await sudo()
     try:
-        await Audify.stream_call("https://te.legra.ph/file/29f784eb49d230ab62e9e.mp4")
-    except NoActiveGroupCall:
-        LOGGER("Audify").warning(
-            "\ud83d\udce2 No active voice chat found in log group. Bot will start without initial stream test."
-        )  # Railway fix: Continue startup instead of exiting
-    except:
-        pass
+        users = await get_gbanned()
+        for user_id in users:
+            BANNED_USERS.add(user_id)
+        users = await get_banned_users()
         for user_id in users:
             BANNED_USERS.add(user_id)
     except:

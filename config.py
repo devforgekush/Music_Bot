@@ -17,6 +17,14 @@ load_dotenv()
 API_ID = int(getenv("API_ID", "0"))
 API_HASH = getenv("API_HASH", "")
 BOT_TOKEN = getenv("BOT_TOKEN", "")
+
+# Railway: Add validation for required env vars
+if not API_ID or API_ID == 0:
+    raise SystemExit("[ERROR] - API_ID is required for Railway deployment")
+if not API_HASH:
+    raise SystemExit("[ERROR] - API_HASH is required for Railway deployment")
+if not BOT_TOKEN:
+    raise SystemExit("[ERROR] - BOT_TOKEN is required for Railway deployment")
 OWNER_ID = int(getenv("OWNER_ID", "0"))
 
 # Music API Configs
@@ -29,7 +37,9 @@ OWNER_USERNAME = getenv("OWNER_USERNAME", "i_am_alive_as_fumk") # Updated owner
 BOT_USERNAME = getenv("BOT_USERNAME", "AudifyMusicBot") #Replace With Yours ~
 BOT_NAME = getenv("BOT_NAME", "Audify") #Replace With Yours ~
 ASSUSERNAME = getenv("ASSUSERNAME", "AudifyAssistant") #Replace With Yours ~
-LOGGER_ID = int(getenv("LOGGER_ID", "-1002723963783")) #Replace With Yours ~
+LOGGER_ID = int(getenv("LOGGER_ID", "0"))
+if LOGGER_ID == 0:
+    raise SystemExit("[ERROR] - LOGGER_ID is required for Railway deployment")
 BOT_LOGS_CHANNEL = int(getenv("BOT_LOGS_CHANNEL", "-1002731989493")) #Replace With Yours ~
 
 # MongoDB

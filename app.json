@@ -56,29 +56,22 @@
     "SPOTIFY_CLIENT_ID": {
       "description": "Spotify API Client ID. Get from https://developer.spotify.com/dashboard.",
       "value": "",
-      "required": true
+      "required": false
     },
     "SPOTIFY_CLIENT_SECRET": {
       "description": "Spotify API Client Secret. Get from https://developer.spotify.com/dashboard.",
       "value": "",
-      "required": true
+      "required": false
     },
     "API_KEY": {
       "description": "Get your API key from the appropriate provider.",
       "value": "",
-      "required": true
+      "required": false
     }
   },
   "buildpacks": [
     {
       "url": "heroku/python"
-    },
-    {
-      "url": "heroku/nodejs"
-    },
-    {
-      "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest.git"
     }
-  ],
-  "stack": "container"
+  ]
 }

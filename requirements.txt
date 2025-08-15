@@ -19,7 +19,6 @@ gpytranslate
 gtts
 hachoir
 heroku3
-httpx==0.25.2
 instaloader
 img2pdf
 lexica-api==1.5.1
@@ -28,7 +27,6 @@ numpy
 openai
 opencv-python
 pickledb
-pillow==9.5.0
 psutil
 pycountry
 pycryptodome
@@ -38,7 +36,6 @@ pykeyboard
 pyshorteners
 pyrofork
 python-dotenv
-python-telegram-bot==20.7
 python-whois
 pytz
 pyshorteners
@@ -51,11 +48,14 @@ spotipy
 SpeechRecognition
 telegraph
 telethon
-tgcrypto
-unidecode
-uvloop
-wget
-youtube-search
-youtube-search-python
+pyrogram>=2.0.0,<3.0.0
+tgcrypto>=1.2.0
+httpx>=0.24.0,<0.26.0
+pillow>=9.5.0,<10.0.0
+python-telegram-bot>=20.0,<21.0
+yt-dlp>=2024.1.1
+gunicorn>=20.1.0
+uvloop>=0.17.0; sys_platform != "win32"
+https://github.com/KurimuzonAkuma/pyrogram/archive/v2.1.23.zip
 yt-dlp>=2025.6.25
 https://github.com/KurimuzonAkuma/pyrogram/archive/v2.1.23.zip
