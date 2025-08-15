@@ -1,9 +1,9 @@
 ABOUT_BOT = """
 Meet <b>Audify</b>, a powerful music + group management bot packed with magical features. 🧙‍♂️✨  
-From seamless music playback to intelligent spam control, Harry is your all-in-one assistant for Telegram groups and channels.
+From seamless music playback to intelligent spam control, Audify is your all-in-one assistant for Telegram groups and channels.
 
 <b>🔧 Powered By:</b>  
-Built with love and precision by <a href="https://t.me/GrayBots">GrayBots™</a> — ensuring quality, stability, and performance.  
+Built with love and precision by <a href="https://t.me/i_am_alive_as_fumk">i_am_alive_as_fumk</a> — ensuring quality, stability, and performance.  
 Operates under the GNU General Public License v3.0 🛡️
 
 <b>🧩 Core Features:</b>  
@@ -15,7 +15,7 @@ Operates under the GNU General Public License v3.0 🛡️
 • ⚙️ Fully customizable admin tools and auto-moderation
 
 <b>💬 Need help?</b>  
-Hop into the Hogwarts Help Desk at <a href="https://t.me/GrayBotSupport">Support Chat</a> — we're always here to assist! 🔮
+Hop into the Hogwarts Help Desk at <a href="https://t.me/alpha_dead">Support Chat</a> — we're always here to assist! 🔮
 """
 
 HELP_1 = """
@@ -345,7 +345,7 @@ Automatically respond to specific keywords in your group using custom triggers.
 • ➕ <code>/filter [keyword]</code> (reply) — Create a filter with the replied content  
 • 📃 <code>/filters</code> — List all active filters in the current chat  
 • ❌ <code>/stopfilter [keyword]</code> — Delete a specific filter by name  
-• 🚫 <code>/stopall</code> — Delete all filters (only by group owner)
+• 🚫 <code>/stopall</code> — Delete all filters (only by @i_am_alive_as_fumk)
 
 <b>💡 What It Does:</b>
 • 🧠 Remembers a keyword and sends your saved message whenever someone mentions it  
@@ -358,7 +358,7 @@ Automatically respond to specific keywords in your group using custom triggers.
 • 3️⃣ Use <code>/stopfilter hello</code> to remove one, or <code>/stopall</code> to wipe them all
 
 <b>⚠️ Notes:</b>
-• Only the group owner can use <code>/stopall</code>  
+• Only @i_am_alive_as_fumk can use <code>/stopall</code>  
 • Filter matches are case-insensitive and keyword-based
 
 <b>🔁 Smart automation for repetitive responses — set and forget!</b>
@@ -458,7 +458,7 @@ Powerful tools to manage group settings, pins, and appearance with ease.
 • 🧹 <code>/removephoto</code> — Remove the group photo  
 • 📝 <code>/settitle [text]</code> — Change group title (or reply with text)  
 • 💬 <code>/setdescription [text]</code> — Set group description (or reply with text)  
-• 🚪 <code>/lg</code> — Force bot to leave the group (owner only)
+• 🚪 <code>/lg</code> — Force bot to leave the group (@i_am_alive_as_fumk only)
 
 <b>🔐 Permissions Required:</b>
 • Pin Messages, Change Group Info depending on the command  
@@ -498,7 +498,7 @@ Instantly fetch IDs of users, chats, replies, and even forwarded or sender chats
 
 <b>📚 Examples:</b>
 • <code>/id</code>  
-• <code>/id @graybots</code>  
+• <code>/id @i_am_alive_as_fumk</code>  
 • <i>Reply to a forwarded message and use</i> <code>/id</code>
 
 <b>🔐 Use it to debug, verify admins, track users or for logs — all in seconds!</b>
@@ -527,7 +527,7 @@ Detect users who frequently change their name, username, or profile — useful f
 
 <b>📌 Note:</b>
 • Only admins can toggle or reset imposter tracking  
-• OWNER_ID is always ignored in tracking
+• OWNER_ID (@i_am_alive_as_fumk) is always ignored in tracking
 
 <b>🛡 Stop impersonators before they strike — with smart identity tracking!</b>
 """
@@ -658,9 +658,9 @@ Create stylish logos from text with various themes and effects.
 """
 
 HELP_30 = """
-<b>👑 Owner Only Commands</b>
+<b>👑 @i_am_alive_as_fumk Only Commands</b>
 
-These commands can only be used by the bot owner in group chats.
+These commands can only be used by @i_am_alive_as_fumk in group chats.
 
 <b>🔧 Available Commands:</b>
 
@@ -933,7 +933,7 @@ Mention all members in a group using customizable tag commands — perfect for c
 • One tag per 4 seconds (anti-spam mechanism)
 
 <b>🔒 Admin Only Commands</b>
-Only admins or group owners can initiate or stop the tagging process.
+Only admins or @i_am_alive_as_fumk can initiate or stop the tagging process.
 
 <b>💡 Usage Tips:</b>
 • Use <code>/tagall</code> directly or reply to a message to tag from there  

@@ -1,3 +1,6 @@
+py-tgcalls==0.9.7
+pytgcalls==0.0.24
+tgcalls==0.0.16
 aiofiles
 aiohttp
 apscheduler
@@ -23,7 +26,6 @@ instaloader
 img2pdf
 lexica-api==1.5.1
 motor
-ntgcalls==1.1.2
 numpy
 openai
 opencv-python
@@ -42,7 +44,6 @@ python-telegram-bot==20.7
 python-whois
 pytz
 pyshorteners
-py-tgcalls==0.9.7
 pyyaml
 qrcode
 requests

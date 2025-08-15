@@ -58,7 +58,7 @@ async def init():
         pass
     await Audify.decorators()
     LOGGER("Audify").info(
-        "🎧 Audify Music Bot started successfully.\n🛡️ Developed with passion by @GrayBots 💻"
+        "🎧 Audify Music Bot started successfully.\n🛡️ Developed with passion by @i_am_alive_as_fumk 💻\nChannel: @alpha_dead4"
     )
     await idle()
     await app.stop()

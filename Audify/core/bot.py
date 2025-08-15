@@ -3,12 +3,10 @@
 # ---------------------------------------------------------
 # This code is part of the Audify Bot project.
 # Unauthorized copying, distribution, or use is prohibited.
-# © Graybots™. All rights reserved.
+# © devforgekush. All rights reserved.
 # ---------------------------------------------------------
 
-import uvloop
-
-uvloop.install()
+ # uvloop is disabled for Windows compatibility
 
 from pyrogram import Client, errors
 from pyrogram.enums import ChatMemberStatus, ParseMode
