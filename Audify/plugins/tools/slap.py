@@ -9,6 +9,8 @@
 import logging
 import html
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from pyrogram import filters
 from pyrogram.types import Message
 from pyrogram.errors import ChatWriteForbidden, ChatRestricted, RPCError
@@ -17,6 +19,18 @@ from Audify import app
 log = logging.getLogger(__name__)
 
 API_URL = "https://api.waifu.pics"
+
+# ✅ Prepare a requests session with retries
+session = requests.Session()
+retries = Retry(
+    total=3,
+    backoff_factor=1,
+    status_forcelist=[502, 503, 504, 522, 524],
+    allowed_methods=["GET"]
+)
+adapter = HTTPAdapter(max_retries=retries)
+session.mount("http://", adapter)
+session.mount("https://", adapter)
 
 # ✅ SFW Action Categories with emojis
 sfw_actions = {
@@ -36,9 +50,6 @@ nsfw_actions = {
 
 
 def html_user_mention(user) -> str:
-    """
-    Safe HTML mention for a user. Handles None and escapes special chars.
-    """
     if not user:
         return "someone"
     name = user.first_name or "User"
@@ -47,9 +58,6 @@ def html_user_mention(user) -> str:
 
 
 def build_caption(sender, category: str, emoji: str, replied_user=None) -> str:
-    """
-    Build a robust HTML caption. Avoids MarkdownV2 pitfalls completely.
-    """
     sender_mention = html_user_mention(sender)
     category_esc = html.escape(category, quote=True)
     emoji_esc = html.escape(emoji, quote=True)
@@ -61,21 +69,17 @@ def build_caption(sender, category: str, emoji: str, replied_user=None) -> str:
 
 
 async def safe_reply_animation(message: Message, animation_url: str, caption: str):
-    """
-    Try replying with an animation; swallow write/permission errors gracefully.
-    """
     try:
         await message.reply_animation(
             animation=animation_url,
             caption=caption,
-            parse_mode="html",         # ✅ permanent fix: use HTML (no MarkdownV2)
-            disable_notification=False # keep normal behavior
+            parse_mode="html",
+            disable_notification=False
         )
         return True
     except (ChatWriteForbidden, ChatRestricted):
         log.warning("[Waifu.pics] Chat write restricted: %s", message.chat.id if message.chat else "unknown")
     except RPCError as e:
-        # Covers CHANNEL_PRIVATE and other Telegram RPC errors
         log.warning("[Waifu.pics] Telegram RPC error in chat %s: %s", message.chat.id if message.chat else "unknown", e)
     except Exception as e:
         log.exception("[Waifu.pics] Unexpected error sending animation: %s", e)
@@ -83,9 +87,6 @@ async def safe_reply_animation(message: Message, animation_url: str, caption: st
 
 
 async def safe_reply_text(message: Message, text: str):
-    """
-    Try replying with text; swallow write/permission errors gracefully.
-    """
     try:
         await message.reply_text(text, disable_web_page_preview=True)
         return True
@@ -100,14 +101,12 @@ async def safe_reply_text(message: Message, text: str):
 
 # ✅ Helper to fetch & send image safely
 async def send_action_image(client, message: Message, action_type: str, category: str, emoji: str):
-    # Ignore messages without a user context (e.g., anonymous admins/channel posts)
     if not (message and message.from_user):
         log.info("[Waifu.pics] Ignoring message without from_user in chat %s", message.chat.id if message.chat else "unknown")
         return
 
     try:
-        # Use a short timeout to avoid blocking the event loop too long
-        r = requests.get(f"{API_URL}/{action_type}/{category}", timeout=10)
+        r = session.get(f"{API_URL}/{action_type}/{category}", timeout=15)
         if r.status_code != 200:
             await safe_reply_text(message, "❌ Error occurred while fetching image.")
             return
@@ -122,12 +121,13 @@ async def send_action_image(client, message: Message, action_type: str, category
 
         sent = await safe_reply_animation(message, image_url, caption)
         if not sent:
-            # If we couldn't send (e.g., CHANNEL_PRIVATE), fail silently (already logged)
             return
 
+    except requests.exceptions.Timeout:
+        log.warning("[Waifu.pics] Request timed out for %s/%s", action_type, category)
+        await safe_reply_text(message, "⚠️ The image server took too long to respond. Please try again later.")
     except Exception as e:
         log.exception("[Waifu.pics] Fatal error: %s", e)
-        # Best-effort user feedback (will be skipped if not allowed)
         await safe_reply_text(message, "❌ Something went wrong while processing your request.")
 
 
