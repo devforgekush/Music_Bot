@@ -1,9 +1,9 @@
 ABOUT_BOT = """
-Meet <b>Audify</b>, a powerful music + group management bot packed with magical features. 🧙‍♂️✨  
-From seamless music playback to intelligent spam control, Audify is your all-in-one assistant for Telegram groups and channels.
+Meet <b>@devforgekush</b>, a powerful music + group management bot packed with magical features. 🧙‍♂️✨  
+From seamless music playback to intelligent spam control, @devforgekush is your all-in-one assistant for Telegram groups and channels.
 
 <b>🔧 Powered By:</b>  
-Built with love and precision by <a href="https://t.me/i_am_alive_as_fumk">Kushagra</a> — ensuring quality, stability, and performance.  
+Built with love and precision by <a href="https://t.me/devforgekush">@devforgekush</a> — ensuring quality, stability, and performance.  
 Operates under the GNU General Public License v3.0 🛡️
 
 <b>🧩 Core Features:</b>  
@@ -345,7 +345,7 @@ Automatically respond to specific keywords in your group using custom triggers.
 • ➕ <code>/filter [keyword]</code> (reply) — Create a filter with the replied content  
 • 📃 <code>/filters</code> — List all active filters in the current chat  
 • ❌ <code>/stopfilter [keyword]</code> — Delete a specific filter by name  
-• 🚫 <code>/stopall</code> — Delete all filters (only by @i_am_alive_as_fumk)
+• 🚫 <code>/stopall</code> — Delete all filters (only by @devforgekush)
 
 <b>💡 What It Does:</b>
 • 🧠 Remembers a keyword and sends your saved message whenever someone mentions it  
@@ -358,7 +358,7 @@ Automatically respond to specific keywords in your group using custom triggers.
 • 3️⃣ Use <code>/stopfilter hello</code> to remove one, or <code>/stopall</code> to wipe them all
 
 <b>⚠️ Notes:</b>
-• Only @i_am_alive_as_fumk can use <code>/stopall</code>  
+• Only @devforgekush can use <code>/stopall</code>  
 • Filter matches are case-insensitive and keyword-based
 
 <b>🔁 Smart automation for repetitive responses — set and forget!</b>
@@ -458,7 +458,7 @@ Powerful tools to manage group settings, pins, and appearance with ease.
 • 🧹 <code>/removephoto</code> — Remove the group photo  
 • 📝 <code>/settitle [text]</code> — Change group title (or reply with text)  
 • 💬 <code>/setdescription [text]</code> — Set group description (or reply with text)  
-• 🚪 <code>/lg</code> — Force bot to leave the group (@i_am_alive_as_fumk only)
+• 🚪 <code>/lg</code> — Force bot to leave the group (@devforgekush only)
 
 <b>🔐 Permissions Required:</b>
 • Pin Messages, Change Group Info depending on the command  
@@ -498,7 +498,7 @@ Instantly fetch IDs of users, chats, replies, and even forwarded or sender chats
 
 <b>📚 Examples:</b>
 • <code>/id</code>  
-• <code>/id @i_am_alive_as_fumk</code>  
+• <code>/id @devforgekush</code>  
 • <i>Reply to a forwarded message and use</i> <code>/id</code>
 
 <b>🔐 Use it to debug, verify admins, track users or for logs — all in seconds!</b>
@@ -527,7 +527,7 @@ Detect users who frequently change their name, username, or profile — useful f
 
 <b>📌 Note:</b>
 • Only admins can toggle or reset imposter tracking  
-• OWNER_ID (@i_am_alive_as_fumk) is always ignored in tracking
+• OWNER_ID (@devforgekush) is always ignored in tracking
 
 <b>🛡 Stop impersonators before they strike — with smart identity tracking!</b>
 """
@@ -658,7 +658,7 @@ Create stylish logos from text with various themes and effects.
 """
 
 HELP_30 = """
-<b>👑 @i_am_alive_as_fumk Only Commands</b>
+<b>👑 @devforgekush Only Commands</b>
 
 These commands can only be used by @i_am_alive_as_fumk in group chats.
 
@@ -764,7 +764,7 @@ Easily generate a QR code from any text, link, or message using a simple command
 
 <b>📚 Examples:</b>
 • <code>/qr https://example.com</code>  
-• <code>/qr Audify is awesome</code>
+• <code>/qr @devforgekush is awesome</code>
 
 <b>🧠 What It Does:</b>
 • Converts your input into a clean QR image  

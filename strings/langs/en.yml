@@ -8,7 +8,7 @@ bioscan_warn: "🚨 Bio warning issued to {name} [`{user_id}`]\n⚠️ You have 
 bioscan_muted: "🔇 {name} [`{user_id}`] has been muted for violating bio rules (5 warnings)."
 bioscan_unmuted: "🔓 User has been successfully unmuted."
 bioscan_mute_failed: "⚠️ Failed to mute/unmute. Make sure I have sufficient admin rights."
-bioscan_permission_denied: "🚫 Only @i_am_alive_as_fumk or admins can change bio scan settings."
+bioscan_permission_denied: "🚫 Only @devforgekush or admins can change bio scan settings."
 unmute_button: "Unmute"
 authadd_usage: "🔁 Reply to a user to allow them from bio scan punishments."
 authadd_success: "✅ User [`{user_id}`] has been allowed. Warns have been reset."
@@ -16,7 +16,7 @@ authremove_usage: "🔁 Reply to a user to remove their exemption from bio scann
 authremove_success: "🚨 User [`{user_id}`] is no longer exempt. Future bio violations will be punished."
 authusers_none: "📭 No users are currently exempted from bio scanning."
 authusers_list: "📋 Allowed Users in this Group:\n\n"
-unmute_not_allowed: "🚫 You are not allowed to unmute users. Only admins/@i_am_alive_as_fumk can do this."
+unmute_not_allowed: "🚫 You are not allowed to unmute users. Only admins/@devforgekush can do this."
 
 general_1 : "🔁 Reply to a user's message or provide a username/user ID 👤📩\n\n✨ Whether you're responding directly or tagging someone, make sure to reference their message or include their username/ID for smooth interaction! 💬✅"
 general_2 : "⚠️ Oops! Something went wrong while processing your query\n\n🛠️ Exception: <code>{0}</code>\n\nPlease try again later or check the input. 🚧🔍"

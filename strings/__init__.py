@@ -1,3 +1,5 @@
+# © @devforgekush. All rights reserved.
+# Audiofy Bot
 import os
 from typing import List
 
