@@ -1,7 +1,7 @@
 FROM python:3.12-slim
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl ffmpeg ca-certificates gnupg git && \
+    apt-get install -y --no-install-recommends curl ffmpeg ca-certificates gnupg git libjpeg-dev zlib1g-dev build-essential && \
     rm -rf /var/lib/apt/lists/*
 
 ## Node.js install removed for python-only deployment. Add node install if needed.
