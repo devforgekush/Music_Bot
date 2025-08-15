@@ -21,7 +21,7 @@ from pytgcalls.types import Update
 # Compatibility imports for PyTgCalls API changes across versions
 try:
     # Older API
-    from pytgcalls.types import Stream
+    from pytgcalls.types.stream import MediaStream
     from pytgcalls.types.input_stream.quality import (
         HighQualityAudio,
         MediumQualityVideo,
@@ -203,7 +203,7 @@ class Call(PyTgCalls):
         dur = int(dur)
         played, con_seconds = speed_converter(playing[0]["played"], speed)
         duration = seconds_to_min(dur)
-        stream = Stream(
+    stream = MediaStream(
             out,
             audio_parameters=HighQualityAudio(),
             video_parameters=MediumQualityVideo(),
