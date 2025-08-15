@@ -1,6 +1,4 @@
-# If you wanna your own design and attractive thumbnail
-# ~ Contact - @alpha_dead ~
-# This is a Public thumbnail code Made bt ~ Aviax Beatz ~
+# Custom thumbnail code for Audify by Kushagra
 
 import random
 import logging

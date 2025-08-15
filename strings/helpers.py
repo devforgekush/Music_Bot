@@ -3,7 +3,7 @@ Meet <b>Audify</b>, a powerful music + group management bot packed with magical 
 From seamless music playback to intelligent spam control, Audify is your all-in-one assistant for Telegram groups and channels.
 
 <b>🔧 Powered By:</b>  
-Built with love and precision by <a href="https://t.me/i_am_alive_as_fumk">i_am_alive_as_fumk</a> — ensuring quality, stability, and performance.  
+Built with love and precision by <a href="https://t.me/i_am_alive_as_fumk">Kushagra</a> — ensuring quality, stability, and performance.  
 Operates under the GNU General Public License v3.0 🛡️
 
 <b>🧩 Core Features:</b>  
@@ -15,7 +15,7 @@ Operates under the GNU General Public License v3.0 🛡️
 • ⚙️ Fully customizable admin tools and auto-moderation
 
 <b>💬 Need help?</b>  
-Hop into the Hogwarts Help Desk at <a href="https://t.me/alpha_dead">Support Chat</a> — we're always here to assist! 🔮
+Hop into the Hogwarts Help Desk at <a href="https://t.me/i_am_alive_as_fumk">Support Chat</a> — we're always here to assist! 🔮
 """
 
 HELP_1 = """

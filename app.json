@@ -1,12 +1,12 @@
 {
   "name": "Audify",
   "description": "Audify is a powerful Telegram Music + Management Bot powered by Python, Pyrogram, and PyTgCalls. It streams high-quality music in group voice chats, manages your community, auto-moderates, and supports Spotify, YouTube, and more — all in one bot.",
-  "logo": "https://files.catbox.moe/6mgel1.jpg",
+  "logo": "",
   "keywords": [
     "python3",
     "telegram",
     "bot",
-    "GrayBots",
+  "Audify",
     "MusicBot",
     "ManagementBot",
     "Telegram-Music-Bot",
@@ -64,7 +64,7 @@
       "required": true
     },
     "API_KEY": {
-      "description": "Get it from https://t.me/.",
+      "description": "Get your API key from the appropriate provider.",
       "value": "",
       "required": true
     }

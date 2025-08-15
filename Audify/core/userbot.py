@@ -3,7 +3,7 @@
 # ---------------------------------------------------------
 # This code is part of the Audify Bot project.
 # Unauthorized copying, distribution, or use is prohibited.
-# © devforgekush. All rights reserved.
+# © Kushagra. All rights reserved.
 # ---------------------------------------------------------
 
 from pyrogram import Client
@@ -58,10 +58,7 @@ class Userbot(Client):
         LOGGER(__name__).info(f"Starting Assistants...")
         if config.STRING1:
             await self.one.start()
-            try:
-                # Branding removed
-            except:
-                pass
+            # No GrayBots references
             assistants.append(1)
             try:
                 await self.one.send_message(config.LOGGER_ID, "Assistant Started")
@@ -78,10 +75,7 @@ class Userbot(Client):
 
         if config.STRING2:
             await self.two.start()
-            try:
-                # Branding removed
-            except:
-                pass
+            # No GrayBots references
             assistants.append(2)
             try:
                 await self.two.send_message(config.LOGGER_ID, "Assistant Started")
@@ -98,10 +92,7 @@ class Userbot(Client):
 
         if config.STRING3:
             await self.three.start()
-            try:
-                # Branding removed
-            except:
-                pass
+            # No GrayBots references
             assistants.append(3)
             try:
                 await self.three.send_message(config.LOGGER_ID, "Assistant Started")
@@ -118,10 +109,7 @@ class Userbot(Client):
 
         if config.STRING4:
             await self.four.start()
-            try:
-                # Branding removed
-            except:
-                pass
+            # No GrayBots references
             assistants.append(4)
             try:
                 await self.four.send_message(config.LOGGER_ID, "Assistant Started")
@@ -138,10 +126,7 @@ class Userbot(Client):
 
         if config.STRING5:
             await self.five.start()
-            try:
-                # Branding removed
-            except:
-                pass
+            # No GrayBots references
             assistants.append(5)
             try:
                 await self.five.send_message(config.LOGGER_ID, "Assistant Started")

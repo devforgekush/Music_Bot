@@ -3,7 +3,7 @@
 # ---------------------------------------------------------
 # This code is part of the Audify Bot project.
 # Unauthorized copying, distribution, or use is prohibited.
-# © Graybots™. All rights reserved.
+# © Kushagra. All rights reserved.
 # ---------------------------------------------------------
 
 from pyrogram import Client, filters
@@ -12,7 +12,7 @@ import random
 import requests
 from Audify import app
 
-SUPPORT_CHAT = "GrayBotSupport"
+SUPPORT_CHAT = "i_am_alive_as_fumk"
 
 # Common support button
 BUTTON = [[InlineKeyboardButton("Support", url=f"https://t.me/{SUPPORT_CHAT}")]]
