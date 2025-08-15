@@ -3,7 +3,7 @@
 # ---------------------------------------------------------
 # This code is part of the Audify Bot project.
 # Unauthorized copying, distribution, or use is prohibited.
-# © Graybots™. All rights reserved.
+# All rights reserved.
 # ---------------------------------------------------------
 
 import re
@@ -66,7 +66,7 @@ HEROKU_API_KEY = getenv("HEROKU_API_KEY", None)
 # GitHub Upstream
 UPSTREAM_REPO = getenv(
     "UPSTREAM_REPO",
-    "https://github.com/GrayBots/Audify",
+    "https://github.com/devforgekush/musicbot-",
 )
 UPSTREAM_BRANCH = getenv("UPSTREAM_BRANCH", "main")
 GIT_TOKEN = getenv(
@@ -76,7 +76,7 @@ GIT_TOKEN = getenv(
 # Support
 SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/alpha_dead")
 SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/alpha_dead")
-SOURCE_CODE = getenv("SOURCE_CODE", "https://github.com/GrayBots/Audify") # You can update this if you fork
+SOURCE_CODE = getenv("SOURCE_CODE", "https://github.com/devforgekush/musicbot-") # You can update this if you fork
 PRIVACY_LINK = getenv("PRIVACY_LINK", "https://telegra.ph/Privacy-Policy-for-Audify-Music--Management-08-02-2")
 
 # Playlist

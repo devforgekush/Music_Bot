@@ -3,7 +3,7 @@
 # ---------------------------------------------------------
 # This code is part of the Audify Bot project.
 # Unauthorized copying, distribution, or use is prohibited.
-# © Graybotsâ„¢. All rights reserved.
+# All rights reserved.
 # ---------------------------------------------------------
 
 import asyncio
