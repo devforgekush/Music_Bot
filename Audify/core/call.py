@@ -19,7 +19,7 @@ from pytgcalls.exceptions import (
 )
 from pytgcalls.types import Update
 # Compatibility imports for PyTgCalls API changes across versions
-from pytgcalls.types.stream import MediaStream, HighQualityAudio, MediumQualityVideo
+from pytgcalls.types.stream import MediaStream, AudioQuality, VideoQuality
 from pytgcalls.types.stream import StreamAudioEnded
 
 import config
