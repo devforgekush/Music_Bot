@@ -203,7 +203,7 @@ class Call(PyTgCalls):
         dur = int(dur)
         played, con_seconds = speed_converter(playing[0]["played"], speed)
         duration = seconds_to_min(dur)
-    stream = MediaStream(
+        stream = MediaStream(
             out,
             audio_parameters=HighQualityAudio(),
             video_parameters=MediumQualityVideo(),
