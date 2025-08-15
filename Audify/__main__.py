@@ -44,26 +44,26 @@ async def init():
     await app.start()
     for all_module in ALL_MODULES:
         importlib.import_module("Audify.plugins" + all_module)
-    LOGGER("Audify.plugins").info("âœ… All modules successfully loaded. Audify is ready to serve ðŸŽ¶")
+    LOGGER("Audify.plugins").info("✅ All modules successfully loaded. Audify is ready to serve 🎶")
     await userbot.start()
     await Audify.start()
     try:
         await Audify.stream_call("https://te.legra.ph/file/29f784eb49d230ab62e9e.mp4")
     except NoActiveGroupCall:
         LOGGER("Audify").error(
-            "ðŸ"¢ Please start a voice chat in your log group or linked channel!\n\nâš ï¸ Audify cannot stream without an active group call."
+            "📢 Please start a voice chat in your log group or linked channel!\n\n⚠️ Audify cannot stream without an active group call."
         )
         exit()
     except:
         pass
     await Audify.decorators()
     LOGGER("Audify").info(
-        "ðŸŽ§ Audify Music Bot started successfully.\nðŸ›¡ï¸ Developed with passion by @i_am_alive_as_fumk ðŸ'»\nChannel: @alpha_dead4"
+        "🎧 Audify Music Bot started successfully.\n🛡️ Developed with passion by @i_am_alive_as_fumk 💻\nChannel: @alpha_dead4"
     )
     await idle()
     await app.stop()
     await userbot.stop()
-    LOGGER("Audify").info("ðŸ›' Audify Music Bot has stopped. See you soon! ðŸ'‹")
+    LOGGER("Audify").info("🛑 Audify Music Bot has stopped. See you soon! 👋")
 
 
 if __name__ == "__main__":
