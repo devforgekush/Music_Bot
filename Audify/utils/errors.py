@@ -4,7 +4,7 @@ from functools import wraps
 
 from pyrogram.errors.exceptions.forbidden_403 import ChatWriteForbidden
 from Audify import app
-from Audify.logging import LOGGER
+from Audify.logger import LOGGER
 
 
 def split_limits(text):
