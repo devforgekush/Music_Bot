@@ -21,7 +21,7 @@ from pytgcalls.types import Update
 # Compatibility imports for PyTgCalls API changes across versions
 try:
     # Older API
-    from pytgcalls.types.input_stream import AudioPiped, AudioVideoPiped
+    from pytgcalls.types import AudioPiped, AudioVideoPiped
     from pytgcalls.types.input_stream.quality import (
         HighQualityAudio,
         MediumQualityVideo,
