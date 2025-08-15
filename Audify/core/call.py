@@ -27,7 +27,7 @@ try:
         MediumQualityVideo,
     )
 except ModuleNotFoundError:  # Newer API
-    from pytgcalls.types import AudioPiped, AudioVideoPiped
+    from pytgcalls.types import Stream
     from pytgcalls.types.quality import HighQualityAudio, MediumQualityVideo
 from pytgcalls.types.stream import StreamAudioEnded
 
