@@ -7,9 +7,9 @@
 # ---------------------------------------------------------
 
 import asyncio
-from telegram import CallbackQuery
-from pyrogram import filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+from pyrogram import Client, filters
+from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 from Audify import YouTube, app
 from Audify.core.call import Audify
@@ -25,13 +25,6 @@ from Audify.utils.database import (
     music_on,
     set_loop,
 )
-from pyrogram.errors import (
-    ChatAdminRequired,
-    InviteRequestSent,
-    UserAlreadyParticipant,
-    UserNotParticipant,
-)
-from Audify.utils.database import get_assistant
 from Audify.utils.decorators.language import languageCB
 from Audify.utils.formatters import seconds_to_min
 from Audify.utils.inline import close_markup, stream_markup, stream_markup_timer
@@ -43,7 +36,6 @@ from config import (
     STREAM_IMG_URL,
     TELEGRAM_AUDIO_URL,
     TELEGRAM_VIDEO_URL,
-    SUPPORT_CHAT,
     adminlist,
     confirmer,
     votemode,
@@ -52,7 +44,6 @@ from strings import get_string
 
 checker = {}
 upvoters = {}
-
 
 
 @app.on_callback_query(filters.regex("unban_assistant"))
