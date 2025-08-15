@@ -28,6 +28,7 @@ async def init():
         and not config.STRING3
         and not config.STRING4
         and not config.STRING5
+    ):
     try:
         await Audify.stream_call("https://te.legra.ph/file/29f784eb49d230ab62e9e.mp4")
     except NoActiveGroupCall:
