@@ -1,16 +1,16 @@
-# Audify Music Bot by @i_am_alive_as_fumk
 
-Welcome to your personalized Telegram music bot project! This repo is maintained and branded by @i_am_alive_as_fumk, with the official channel at [@alpha_dead](https://t.me/alpha_dead).
+# Telegram Music Bot
+
+This project is a Telegram music bot for group and channel management. It supports music playback from multiple sources and includes admin controls and database integration.
 
 ## Features
-
-## Deployment
-## Credits
-All customizations, branding, and maintenance: @i_am_alive_as_fumk
+- Play music in Telegram groups and channels
+- Supports YouTube, Spotify, SoundCloud, and more
+- Admin and owner controls
+- MongoDB database integration
+- Easy deployment on Railway, Replit, or Heroku
 
 ## License
 See `LICENSE` for details.
 
----
-
-For support, join [@alpha_dead](https://t.me/alpha_dead) or contact @i_am_alive_as_fumk on Telegram.
+For support, please refer to the documentation or community forums.
