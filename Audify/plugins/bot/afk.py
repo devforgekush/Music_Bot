@@ -1,3 +1,11 @@
+# ---------------------------------------------------------
+# Audify Bot - All rights reserved
+# ---------------------------------------------------------
+# This code is part of the Audify Bot project.
+# Unauthorized copying, distribution, or use is prohibited.
+# © Graybots™. All rights reserved.
+# ---------------------------------------------------------
+
 import re
 import time
 
@@ -8,6 +16,16 @@ from pyrogram.types import Message
 from Audify import app
 from Audify.mongo.afkdb import add_afk, is_afk, remove_afk
 from Audify.mongo.readable_time import get_readable_time
+
+
+def safe_reason_extract(message: Message) -> str:
+    """Safely extract reason text from a command without crashing."""
+    if not message.text:
+        return ""
+    parts = message.text.split(None, 1)
+    if len(parts) > 1:
+        return parts[1].strip()[:100]
+    return ""
 
 
 @app.on_message(filters.command(["afk"], prefixes=["/"]))
@@ -25,136 +43,90 @@ async def active_afk(_, message: Message):
             reasonafk = reasondb["reason"]
             seenago = get_readable_time((int(time.time() - timeafk)))
             if afktype == "text":
-                send = await message.reply_text(
+                await message.reply_text(
                     f"🔔🔔 {message.from_user.first_name} is back online!\n\nWas away for ⏱️ {seenago}",
                     disable_web_page_preview=True,
                 )
             if afktype == "text_reason":
-                send = await message.reply_text(
+                await message.reply_text(
                     f"🔔 {message.from_user.first_name} is back online!\n\nWas away for ⏱️ {seenago}\n\n📝 Reason : {reasonafk}",
                     disable_web_page_preview=True,
                 )
             if afktype == "animation":
                 if str(reasonafk) == "None":
-                    send = await message.reply_animation(
+                    await message.reply_animation(
                         data,
                         caption=f"🔔 {message.from_user.first_name} is back online!\n\nWas away for ⏱️ {seenago}",
                     )
                 else:
-                    send = await message.reply_animation(
+                    await message.reply_animation(
                         data,
                         caption=f"🔔 {message.from_user.first_name} is back online!\n\nWas away for ⏱️ {seenago}\n\n📝 Reason : {reasonafk}",
                     )
             if afktype == "photo":
                 if str(reasonafk) == "None":
-                    send = await message.reply_photo(
+                    await message.reply_photo(
                         photo=f"downloads/{user_id}.jpg",
                         caption=f"🔔 {message.from_user.first_name} is back online!\n\nWas away for ⏱️ {seenago}",
                     )
                 else:
-                    send = await message.reply_photo(
+                    await message.reply_photo(
                         photo=f"downloads/{user_id}.jpg",
                         caption=f"🔔 {message.from_user.first_name} is back online!\n\nWas away for ⏱️ {seenago}\n\n📝 Reason : {reasonafk}",
                     )
         except Exception:
-            send = await message.reply_text(
+            await message.reply_text(
                 f"🔔 {message.from_user.first_name} is back online!",
                 disable_web_page_preview=True,
             )
 
     if len(message.command) == 1 and not message.reply_to_message:
-        details = {
-            "type": "text",
-            "time": time.time(),
-            "data": None,
-            "reason": None,
-        }
+        details = {"type": "text", "time": time.time(), "data": None, "reason": None}
+
     elif len(message.command) > 1 and not message.reply_to_message:
-        _reason = (message.text.split(None, 1)[1].strip())[:100]
+        _reason = safe_reason_extract(message)
         details = {
             "type": "text_reason",
             "time": time.time(),
             "data": None,
             "reason": _reason,
         }
+
     elif len(message.command) == 1 and message.reply_to_message.animation:
         _data = message.reply_to_message.animation.file_id
-        details = {
-            "type": "animation",
-            "time": time.time(),
-            "data": _data,
-            "reason": None,
-        }
+        details = {"type": "animation", "time": time.time(), "data": _data, "reason": None}
+
     elif len(message.command) > 1 and message.reply_to_message.animation:
         _data = message.reply_to_message.animation.file_id
-        _reason = (message.text.split(None, 1)[1].strip())[:100]
-        details = {
-            "type": "animation",
-            "time": time.time(),
-            "data": _data,
-            "reason": _reason,
-        }
+        _reason = safe_reason_extract(message)
+        details = {"type": "animation", "time": time.time(), "data": _data, "reason": _reason}
+
     elif len(message.command) == 1 and message.reply_to_message.photo:
         await app.download_media(message.reply_to_message, file_name=f"{user_id}.jpg")
-        details = {
-            "type": "photo",
-            "time": time.time(),
-            "data": None,
-            "reason": None,
-        }
+        details = {"type": "photo", "time": time.time(), "data": None, "reason": None}
+
     elif len(message.command) > 1 and message.reply_to_message.photo:
         await app.download_media(message.reply_to_message, file_name=f"{user_id}.jpg")
-        _reason = message.text.split(None, 1)[1].strip()
-        details = {
-            "type": "photo",
-            "time": time.time(),
-            "data": None,
-            "reason": _reason,
-        }
+        _reason = safe_reason_extract(message)
+        details = {"type": "photo", "time": time.time(), "data": None, "reason": _reason}
+
     elif len(message.command) == 1 and message.reply_to_message.sticker:
         if message.reply_to_message.sticker.is_animated:
-            details = {
-                "type": "text",
-                "time": time.time(),
-                "data": None,
-                "reason": None,
-            }
+            details = {"type": "text", "time": time.time(), "data": None, "reason": None}
         else:
-            await app.download_media(
-                message.reply_to_message, file_name=f"{user_id}.jpg"
-            )
-            details = {
-                "type": "photo",
-                "time": time.time(),
-                "data": None,
-                "reason": None,
-            }
+            await app.download_media(message.reply_to_message, file_name=f"{user_id}.jpg")
+            details = {"type": "photo", "time": time.time(), "data": None, "reason": None}
+
     elif len(message.command) > 1 and message.reply_to_message.sticker:
-        _reason = (message.text.split(None, 1)[1].strip())[:100]
+        _reason = safe_reason_extract(message)
         if message.reply_to_message.sticker.is_animated:
-            details = {
-                "type": "text_reason",
-                "time": time.time(),
-                "data": None,
-                "reason": _reason,
-            }
+            details = {"type": "text_reason", "time": time.time(), "data": None, "reason": _reason}
         else:
-            await app.download_media(
-                message.reply_to_message, file_name=f"{user_id}.jpg"
-            )
-            details = {
-                "type": "photo",
-                "time": time.time(),
-                "data": None,
-                "reason": _reason,
-            }
+            await app.download_media(message.reply_to_message, file_name=f"{user_id}.jpg")
+            details = {"type": "photo", "time": time.time(), "data": None, "reason": _reason}
+
     else:
-        details = {
-            "type": "text",
-            "time": time.time(),
-            "data": None,
-            "reason": None,
-        }
+        details = {"type": "text", "time": time.time(), "data": None, "reason": None}
 
     await add_afk(user_id, details)
     await message.reply_text(f"💤 {message.from_user.first_name} is now AFK.\n\nAway from keyboard—be back soon!")
@@ -163,10 +135,7 @@ async def active_afk(_, message: Message):
 chat_watcher_group = 1
 
 
-@app.on_message(
-    ~filters.me & ~filters.bot & ~filters.via_bot,
-    group=chat_watcher_group,
-)
+@app.on_message(~filters.me & ~filters.bot & ~filters.via_bot, group=chat_watcher_group)
 async def chat_watcher_func(_, message):
     if message.sender_chat or not message.from_user:
         return
@@ -179,7 +148,7 @@ async def chat_watcher_func(_, message):
         message_text = message.text or message.caption or ""
         for entity in message.entities:
             if entity.type == MessageEntityType.BOT_COMMAND:
-                command = message_text[entity.offset : entity.offset + entity.length].lower()
+                command = message_text[entity.offset: entity.offset + entity.length].lower()
                 if command in possible:
                     return
 
@@ -237,30 +206,28 @@ async def chat_watcher_func(_, message):
                     reasonafk = reasondb["reason"]
                     seenago = get_readable_time((int(time.time() - timeafk)))
                     if afktype == "text":
-                        msg += (
-                            f"💤 {replied_first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n"
-                        )
+                        msg += f"💤 {replied_first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n"
                     if afktype == "text_reason":
                         msg += f"💤 {replied_first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n📝 Reason : {reasonafk}\n\n"
                     if afktype == "animation":
                         if str(reasonafk) == "None":
-                            send = await message.reply_animation(
+                            await message.reply_animation(
                                 data,
                                 caption=f"💤 {replied_first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n",
                             )
                         else:
-                            send = await message.reply_animation(
+                            await message.reply_animation(
                                 data,
                                 caption=f"💤 {replied_first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n📝 Reason : {reasonafk}\n\n",
                             )
                     if afktype == "photo":
                         if str(reasonafk) == "None":
-                            send = await message.reply_photo(
+                            await message.reply_photo(
                                 photo=f"downloads/{replied_user_id}.jpg",
                                 caption=f"💤 {replied_first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n",
                             )
                         else:
-                            send = await message.reply_photo(
+                            await message.reply_photo(
                                 photo=f"downloads/{replied_user_id}.jpg",
                                 caption=f"💤 {replied_first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n📝 Reason : {reasonafk}\n\n",
                             )
@@ -274,7 +241,7 @@ async def chat_watcher_func(_, message):
         j = 0
         for x in range(len(entity)):
             if (entity[j].type) == MessageEntityType.MENTION:
-                found = re.findall("@([_0-9a-zA-Z]+)", message.text)
+                found = re.findall("@([_0-9a-zA-Z]+)", message.text or "")
                 try:
                     get_user = found[j]
                     user = await app.get_users(get_user)
@@ -293,30 +260,28 @@ async def chat_watcher_func(_, message):
                         reasonafk = reasondb["reason"]
                         seenago = get_readable_time((int(time.time() - timeafk)))
                         if afktype == "text":
-                            msg += (
-                                f"💤 {user.first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n"
-                            )
+                            msg += f"💤 {user.first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n"
                         if afktype == "text_reason":
                             msg += f"💤 {user.first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n📝 Reason : {reasonafk}\n\n"
                         if afktype == "animation":
                             if str(reasonafk) == "None":
-                                send = await message.reply_animation(
+                                await message.reply_animation(
                                     data,
                                     caption=f"💤 {user.first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n",
                                 )
                             else:
-                                send = await message.reply_animation(
+                                await message.reply_animation(
                                     data,
                                     caption=f"💤 {user.first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n📝 Reason : {reasonafk}\n\n",
                                 )
                         if afktype == "photo":
                             if str(reasonafk) == "None":
-                                send = await message.reply_photo(
+                                await message.reply_photo(
                                     photo=f"downloads/{user.id}.jpg",
                                     caption=f"💤 {user.first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n",
                                 )
                             else:
-                                send = await message.reply_photo(
+                                await message.reply_photo(
                                     photo=f"downloads/{user.id}.jpg",
                                     caption=f"💤 {user.first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n📝 Reason : {reasonafk}\n\n",
                                 )
@@ -346,23 +311,23 @@ async def chat_watcher_func(_, message):
                             msg += f"💤 {first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n📝 Reason : {reasonafk}\n\n"
                         if afktype == "animation":
                             if str(reasonafk) == "None":
-                                send = await message.reply_animation(
+                                await message.reply_animation(
                                     data,
                                     caption=f"💤 {first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n",
                                 )
                             else:
-                                send = await message.reply_animation(
+                                await message.reply_animation(
                                     data,
                                     caption=f"💤 {first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n📝 Reason : {reasonafk}\n\n",
                                 )
                         if afktype == "photo":
                             if str(reasonafk) == "None":
-                                send = await message.reply_photo(
+                                await message.reply_photo(
                                     photo=f"downloads/{user_id}.jpg",
                                     caption=f"💤 {first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n",
                                 )
                             else:
-                                send = await message.reply_photo(
+                                await message.reply_photo(
                                     photo=f"downloads/{user_id}.jpg",
                                     caption=f"💤 {first_name[:25]} is AFK.\n\nSince ⏰ {seenago}\n\n📝 Reason : {reasonafk}\n\n",
                                 )
@@ -371,6 +336,6 @@ async def chat_watcher_func(_, message):
             j += 1
     if msg != "":
         try:
-            send = await message.reply_text(msg, disable_web_page_preview=True)
+            await message.reply_text(msg, disable_web_page_preview=True)
         except:
             return
