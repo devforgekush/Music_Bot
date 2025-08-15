@@ -7,9 +7,6 @@ Welcome to your personalized Telegram music bot project! This repo is maintained
 ## Deployment
 ## Credits
 All customizations, branding, and maintenance: @i_am_alive_as_fumk
-## Credits
-- Original base: Audify by GrayBots
-- All customizations, branding, and maintenance: @i_am_alive_as_fumk
 
 ## License
 See `LICENSE` for details.
