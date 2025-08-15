@@ -1,5 +1,5 @@
 # If you wanna your own design and attractive thumbnail
-# ~ Contact - @Nikchil ~
+# ~ Contact - @alpha_dead ~
 # This is a Public thumbnail code Made bt ~ Aviax Beatz ~
 
 import random

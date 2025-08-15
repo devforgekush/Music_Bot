@@ -64,7 +64,7 @@
       "required": true
     },
     "API_KEY": {
-      "description": "Get it from https://t.me/Nikchil.",
+      "description": "Get it from https://t.me/.",
       "value": "",
       "required": true
     }
