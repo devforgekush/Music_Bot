@@ -1,5 +1,5 @@
 youtube-search-python
-pytgcalls>=4.0.0
+git+https://github.com/pytgcalls/pytgcalls.git
 aiofiles
 aiohttp
 apscheduler
